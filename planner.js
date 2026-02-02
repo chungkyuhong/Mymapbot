@@ -257,6 +257,7 @@ function renderPlanDetail() {
     `;
     
     renderItineraryList();
+    loadDestinationContent('travel'); // 기본값으로 여행 목적 로드
 }
 
 // 일정 목록 렌더링
@@ -434,3 +435,105 @@ if (document.readyState === 'loading') {
 } else {
     initPlanner();
 }
+
+// 목적지 콘텐츠 로딩
+async function loadDestinationContent(purpose) {
+    if (!plannerState.currentPlan) return;
+    
+    const destination = plannerState.currentPlan.destination;
+    
+    try {
+        const response = await fetch(`/api/destination-content/${encodeURIComponent(destination)}?purpose=${purpose}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            renderYouTubeContent(result.data.youtube);
+            renderBlogContent(result.data.blogs);
+        }
+    } catch (error) {
+        console.error('콘텐츠 로드 실패:', error);
+    }
+}
+
+// YouTube 콘텐츠 렌더링
+function renderYouTubeContent(videos) {
+    const container = document.getElementById('youtubeList');
+    
+    if (!videos || videos.length === 0) {
+        container.innerHTML = '<p class="loading-text">YouTube 콘텐츠가 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = videos.map(video => `
+        <a href="${video.url}" target="_blank" class="youtube-item">
+            <div class="youtube-thumbnail">
+                <img src="${video.thumbnail}" alt="${video.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22180%22%3E%3Crect width=%22320%22 height=%22180%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239ca3af%22 font-size=%2220%22%3E🎬%3C/text%3E%3C/svg%3E'">
+                <div class="youtube-duration">${video.duration}</div>
+            </div>
+            <div class="youtube-info">
+                <div class="youtube-title">${video.title}</div>
+                <div class="youtube-channel">${video.channel}</div>
+                <div class="youtube-meta">
+                    <span>조회수 ${video.views}</span>
+                    <span>${video.uploadDate}</span>
+                </div>
+            </div>
+        </a>
+    `).join('');
+}
+
+// 블로그 콘텐츠 렌더링
+function renderBlogContent(blogs) {
+    const container = document.getElementById('blogList');
+    
+    if (!blogs || blogs.length === 0) {
+        container.innerHTML = '<p class="loading-text">블로그 콘텐츠가 없습니다.</p>';
+        return;
+    }
+    
+    container.innerHTML = blogs.map(blog => `
+        <a href="${blog.url}" target="_blank" class="blog-item">
+            <div class="blog-thumbnail">
+                <img src="${blog.thumbnail}" alt="${blog.title}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22150%22%3E%3Crect width=%22200%22 height=%22150%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%239ca3af%22 font-size=%2220%22%3E📝%3C/text%3E%3C/svg%3E'">
+            </div>
+            <div class="blog-info">
+                <div class="blog-title">${blog.title}</div>
+                <div class="blog-summary">${blog.summary}</div>
+                <div class="blog-meta">
+                    <span>작성자: ${blog.blogger}</span>
+                    <span>${blog.date}</span>
+                </div>
+            </div>
+        </a>
+    `).join('');
+}
+
+// 목적 필터 버튼 이벤트 리스너 추가
+document.addEventListener('DOMContentLoaded', () => {
+    // 목적 필터 버튼
+    document.querySelectorAll('.purpose-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // 활성화 상태 변경
+            document.querySelectorAll('.purpose-filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // 콘텐츠 로드
+            const purpose = this.getAttribute('data-purpose');
+            loadDestinationContent(purpose);
+        });
+    });
+    
+    // 새로고침 버튼
+    const refreshBtn = document.getElementById('refreshContent');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+            const activePurpose = document.querySelector('.purpose-filter-btn.active');
+            const purpose = activePurpose ? activePurpose.getAttribute('data-purpose') : 'travel';
+            loadDestinationContent(purpose);
+        });
+    }
+});
+
+// 전역 함수로 노출
+window.loadDestinationContent = loadDestinationContent;
+

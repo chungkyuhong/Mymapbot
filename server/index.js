@@ -677,6 +677,141 @@ app.get('/api/travel-plans/:id/export-ical', (req, res) => {
     res.send(icalContent);
 });
 
+// 목적지 콘텐츠 추천 (YouTube + 네이버 블로그)
+app.get('/api/destination-content/:destination', (req, res) => {
+    const { destination } = req.params;
+    const { purpose } = req.query; // business, travel, dining
+    
+    if (!destination) {
+        return res.status(400).json({
+            success: false,
+            message: '목적지를 입력해주세요.'
+        });
+    }
+    
+    // 목적별 키워드 매핑
+    const purposeKeywords = {
+        business: '출장 비즈니스',
+        travel: '여행 관광',
+        dining: '맛집 음식'
+    };
+    
+    const keyword = purposeKeywords[purpose] || '여행';
+    
+    // YouTube 샘플 데이터 (실제로는 YouTube Data API v3 사용)
+    const youtubeVideos = [
+        {
+            id: 1,
+            title: `${destination} ${keyword} 완벽 가이드 | 꼭 가봐야 할 곳`,
+            channel: '여행유튜버',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Video+1',
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            views: '12만',
+            uploadDate: '2주 전',
+            duration: '15:30'
+        },
+        {
+            id: 2,
+            title: `${destination} ${purpose === 'dining' ? '맛집' : '여행'} VLOG | 현지인 추천`,
+            channel: '트래블러TV',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Video+2',
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            views: '8.5만',
+            uploadDate: '1개월 전',
+            duration: '22:15'
+        },
+        {
+            id: 3,
+            title: `${destination} 이것만 보면 끝! | ${keyword} 총정리`,
+            channel: '여행의정석',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Video+3',
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            views: '15만',
+            uploadDate: '3주 전',
+            duration: '18:45'
+        },
+        {
+            id: 4,
+            title: `${destination} ${keyword} 리얼 후기 | 솔직 리뷰`,
+            channel: '리얼여행',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Video+4',
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            views: '6.2만',
+            uploadDate: '1주 전',
+            duration: '12:20'
+        },
+        {
+            id: 5,
+            title: `${destination} ${purpose === 'business' ? '출장' : '여행'} 꿀팁 대공개`,
+            channel: '스마트트래블',
+            thumbnail: 'https://via.placeholder.com/320x180?text=Video+5',
+            url: `https://www.youtube.com/results?search_query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            views: '9.8만',
+            uploadDate: '2주 전',
+            duration: '20:10'
+        }
+    ];
+    
+    // 네이버 블로그 샘플 데이터 (실제로는 네이버 검색 API 사용)
+    const naverBlogs = [
+        {
+            id: 1,
+            title: `${destination} ${keyword} 완벽 가이드 - 3박 4일 일정`,
+            blogger: '여행블로거A',
+            summary: `${destination}을(를) 다녀온 후기입니다. ${keyword} 관련 정보와 꿀팁을 공유합니다. 실제 경험을 바탕으로 작성했습니다.`,
+            url: `https://search.naver.com/search.naver?query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            date: '2024.01.15',
+            thumbnail: 'https://via.placeholder.com/200x150?text=Blog+1'
+        },
+        {
+            id: 2,
+            title: `${destination} ${purpose === 'dining' ? '맛집' : '필수 코스'} 베스트 10`,
+            blogger: '맛집헌터',
+            summary: `현지인이 추천하는 ${destination}의 숨은 명소들을 소개합니다. ${keyword}을(를) 계획하신다면 꼭 참고하세요!`,
+            url: `https://search.naver.com/search.naver?query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            date: '2024.01.20',
+            thumbnail: 'https://via.placeholder.com/200x150?text=Blog+2'
+        },
+        {
+            id: 3,
+            title: `${destination} ${keyword} 실전 후기 | 알아두면 좋은 정보`,
+            blogger: '트래블노트',
+            summary: `${destination} ${keyword}을(를) 준비하면서 알게 된 유용한 정보들을 정리했습니다. 예산, 교통, 숙소 정보 포함!`,
+            url: `https://search.naver.com/search.naver?query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            date: '2024.01.25',
+            thumbnail: 'https://via.placeholder.com/200x150?text=Blog+3'
+        },
+        {
+            id: 4,
+            title: `${destination} ${purpose === 'business' ? '비즈니스' : '가족'} ${keyword} 추천`,
+            blogger: '여행일기장',
+            summary: `${destination}에서의 ${keyword} 경험을 상세하게 기록했습니다. 사진과 함께 보는 생생한 후기!`,
+            url: `https://search.naver.com/search.naver?query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            date: '2024.02.01',
+            thumbnail: 'https://via.placeholder.com/200x150?text=Blog+4'
+        },
+        {
+            id: 5,
+            title: `${destination} ${keyword} 가성비 좋은 코스 추천`,
+            blogger: '알뜰여행',
+            summary: `저렴하지만 알차게 즐길 수 있는 ${destination} ${keyword} 코스를 소개합니다. 가성비 최고!`,
+            url: `https://search.naver.com/search.naver?query=${encodeURIComponent(destination + ' ' + keyword)}`,
+            date: '2024.02.02',
+            thumbnail: 'https://via.placeholder.com/200x150?text=Blog+5'
+        }
+    ];
+    
+    res.json({
+        success: true,
+        data: {
+            destination,
+            purpose: purpose || 'travel',
+            youtube: youtubeVideos,
+            blogs: naverBlogs
+        }
+    });
+});
+
 // 헬스 체크
 app.get('/api/health', (req, res) => {
     res.json({
