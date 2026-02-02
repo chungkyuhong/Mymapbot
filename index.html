@@ -87,126 +87,17 @@
                     <div class="purpose-section">
                         <label>이동 목적을 선택하세요</label>
                         <div class="purpose-buttons">
-                            <button class="purpose-btn active" data-purpose="business">💼 출장</button>
+                            <button class="purpose-btn" data-purpose="business">💼 출장</button>
                             <button class="purpose-btn" data-purpose="travel">🏖️ 여행</button>
                             <button class="purpose-btn" data-purpose="dining">🍽️ 식사</button>
-                            <button class="purpose-btn" data-purpose="shopping">🛍️ 쇼핑</button>
-                            <button class="purpose-btn" data-purpose="culture">🎭 문화</button>
                         </div>
                     </div>
-
-                    <!-- 목적지 입력 -->
-                    <div class="form-group">
-                        <label>목적지</label>
-                        <input type="text" id="travelDestination" placeholder="지역 또는 장소 입력">
-                    </div>
-
-                    <!-- 날짜 및 인원 -->
-                    <div class="travel-details">
-                        <div class="form-group">
-                            <label>날짜</label>
-                            <input type="date" id="travelDate">
-                        </div>
-                        <div class="form-group">
-                            <label>인원</label>
-                            <select id="travelPeople">
-                                <option value="1">1명</option>
-                                <option value="2">2명</option>
-                                <option value="3">3명</option>
-                                <option value="4">4명</option>
-                                <option value="5+">5명 이상</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button class="primary-btn" id="searchRecommendations">추천 정보 찾기</button>
 
                     <!-- 추천 결과 -->
-                    <div class="recommendations-container" id="recommendationsContainer">
-                        <!-- 출장 추천 -->
-                        <div class="recommendation-section" id="businessRecommendations">
-                            <h3>💼 출장 추천</h3>
-                            
-                            <div class="recommendation-category">
-                                <h4>🏨 비즈니스 호텔</h4>
-                                <div class="recommendation-list" id="businessHotels"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>🍴 미팅 맛집</h4>
-                                <div class="recommendation-list" id="businessRestaurants"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>☕ 카페/작업 공간</h4>
-                                <div class="recommendation-list" id="businessCafes"></div>
-                            </div>
-                        </div>
-
-                        <!-- 여행 추천 -->
-                        <div class="recommendation-section" id="travelRecommendations" style="display:none;">
-                            <h3>🏖️ 여행 추천</h3>
-                            
-                            <div class="recommendation-category">
-                                <h4>🏨 숙박 시설</h4>
-                                <div class="recommendation-list" id="travelHotels"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>🎯 관광지</h4>
-                                <div class="recommendation-list" id="travelAttractions"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>🍜 맛집</h4>
-                                <div class="recommendation-list" id="travelRestaurants"></div>
-                            </div>
-                        </div>
-
-                        <!-- 식사 추천 -->
-                        <div class="recommendation-section" id="diningRecommendations" style="display:none;">
-                            <h3>🍽️ 식사 추천</h3>
-                            
-                            <div class="recommendation-category">
-                                <h4>⭐ 인기 맛집</h4>
-                                <div class="recommendation-list" id="popularRestaurants"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>🌟 숨은 맛집</h4>
-                                <div class="recommendation-list" id="hiddenGems"></div>
-                            </div>
-                        </div>
-
-                        <!-- 쇼핑 추천 -->
-                        <div class="recommendation-section" id="shoppingRecommendations" style="display:none;">
-                            <h3>🛍️ 쇼핑 추천</h3>
-                            
-                            <div class="recommendation-category">
-                                <h4>🏬 쇼핑몰</h4>
-                                <div class="recommendation-list" id="shoppingMalls"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>🎁 특산품 가게</h4>
-                                <div class="recommendation-list" id="localShops"></div>
-                            </div>
-                        </div>
-
-                        <!-- 문화 추천 -->
-                        <div class="recommendation-section" id="cultureRecommendations" style="display:none;">
-                            <h3>🎭 문화 추천</h3>
-                            
-                            <div class="recommendation-category">
-                                <h4>🏛️ 박물관/미술관</h4>
-                                <div class="recommendation-list" id="museums"></div>
-                            </div>
-
-                            <div class="recommendation-category">
-                                <h4>🎪 공연장</h4>
-                                <div class="recommendation-list" id="theaters"></div>
-                            </div>
-                        </div>
+                    <div class="recommendations-container" id="recommendationList">
+                        <p style="padding: 1rem; text-align: center; color: #6b7280;">
+                            위에서 목적을 선택하면 맞춤 추천을 확인할 수 있습니다.
+                        </p>
                     </div>
                 </div>
 

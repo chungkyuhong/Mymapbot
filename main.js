@@ -493,7 +493,34 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 현재 위치 버튼
     document.getElementById('currentLocation').addEventListener('click', function() {
-        map.setView([currentLocation.lat, currentLocation.lng], 13);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    currentLocation.lat = position.coords.latitude;
+                    currentLocation.lng = position.coords.longitude;
+                    map.setView([currentLocation.lat, currentLocation.lng], 13);
+                    
+                    // 현재 위치 마커 업데이트
+                    L.marker([currentLocation.lat, currentLocation.lng], {
+                        icon: L.divIcon({
+                            className: 'custom-marker',
+                            html: '📍',
+                            iconSize: [40, 40]
+                        })
+                    }).addTo(map).bindPopup('현재 위치');
+                    
+                    alert('현재 위치로 이동했습니다.');
+                },
+                function(error) {
+                    console.error('위치 정보를 가져올 수 없습니다:', error);
+                    map.setView([currentLocation.lat, currentLocation.lng], 13);
+                    alert('위치 정보를 가져올 수 없어 기본 위치(서울시청)로 이동합니다.');
+                }
+            );
+        } else {
+            map.setView([currentLocation.lat, currentLocation.lng], 13);
+            alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+        }
     });
     
     // 새로고침 버튼
@@ -541,8 +568,10 @@ async function selectPurpose(purpose) {
     // 버튼 활성화 표시
     document.querySelectorAll('.purpose-btn').forEach(btn => {
         btn.classList.remove('active');
+        if (btn.getAttribute('data-purpose') === purpose) {
+            btn.classList.add('active');
+        }
     });
-    event.target.classList.add('active');
     
     try {
         const response = await fetch(`/api/recommendations/${purpose}?lat=${currentLocation.lat}&lng=${currentLocation.lng}`);
@@ -552,6 +581,8 @@ async function selectPurpose(purpose) {
             appState.recommendations = result.data;
             renderRecommendations(purpose);
             addRecommendationMarkers();
+        } else {
+            alert('추천 정보를 불러올 수 없습니다: ' + result.message);
         }
     } catch (error) {
         console.error('추천 정보 로드 실패:', error);
