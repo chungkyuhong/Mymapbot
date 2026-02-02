@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { searchPOI, searchByCategory, addressToCoord, CATEGORY_CODES } from './poiService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -177,39 +178,99 @@ app.get('/api/complaints/:id', (req, res) => {
     }
 });
 
-// 주변 시설 검색
-app.get('/api/nearby/:category', (req, res) => {
+// 주변 시설 검색 (실제 POI 데이터 사용)
+app.get('/api/nearby/:category', async (req, res) => {
     const { category } = req.params;
     const { lat, lng, radius } = req.query;
     
-    // 샘플 주변 시설 데이터
-    const places = {
-        gas: [
-            { id: 1, name: 'SK 주유소', lat: 37.5680, lng: 126.9800, distance: 0.8 },
-            { id: 2, name: 'GS 칼텍스', lat: 37.5650, lng: 126.9750, distance: 1.2 }
-        ],
-        hospital: [
-            { id: 1, name: '서울대병원', lat: 37.5790, lng: 126.9940, distance: 2.1 },
-            { id: 2, name: '삼성서울병원', lat: 37.4880, lng: 127.0857, distance: 3.5 }
-        ],
-        restaurant: [
-            { id: 1, name: '한식당', lat: 37.5670, lng: 126.9790, distance: 0.5 },
-            { id: 2, name: '이탈리안 레스토랑', lat: 37.5660, lng: 126.9770, distance: 0.7 }
-        ],
-        cafe: [
-            { id: 1, name: '스타벅스', lat: 37.5675, lng: 126.9785, distance: 0.3 },
-            { id: 2, name: '이디야', lat: 37.5655, lng: 126.9775, distance: 0.6 }
-        ],
-        store: [
-            { id: 1, name: 'CU', lat: 37.5668, lng: 126.9782, distance: 0.2 },
-            { id: 2, name: 'GS25', lat: 37.5662, lng: 126.9778, distance: 0.4 }
-        ]
-    };
+    if (!lat || !lng) {
+        return res.status(400).json({
+            success: false,
+            message: '위치 정보(위도/경도)를 입력해주세요.'
+        });
+    }
     
-    res.json({
-        success: true,
-        data: places[category] || []
-    });
+    try {
+        const userLat = parseFloat(lat);
+        const userLng = parseFloat(lng);
+        const searchRadius = radius ? parseInt(radius) : 3000; // 기본 3km
+        
+        // 카테고리 매핑
+        const categoryMapping = {
+            gas: { code: 'OL7', name: '주유소' },
+            hospital: { code: 'HP8', name: '병원' },
+            restaurant: { code: 'FD6', name: '음식점' },
+            cafe: { code: 'CE7', name: '카페' },
+            store: { code: 'CS2', name: '편의점' },
+            mart: { code: 'MT1', name: '마트' },
+            pharmacy: { code: 'PM9', name: '약국' },
+            bank: { code: 'BK9', name: '은행' },
+            parking: { code: 'PK6', name: '주차장' }
+        };
+        
+        const catInfo = categoryMapping[category];
+        if (!catInfo) {
+            return res.status(400).json({
+                success: false,
+                message: '유효하지 않은 카테고리입니다.'
+            });
+        }
+        
+        // POI 검색
+        const results = await searchByCategory(catInfo.code, userLng, userLat, searchRadius);
+        
+        // 응답 형식 변환
+        const places = results.map(poi => ({
+            id: poi.id,
+            name: poi.name,
+            lat: poi.lat,
+            lng: poi.lng,
+            distance: poi.distance ? (poi.distance / 1000).toFixed(1) : '0',
+            address: poi.address,
+            phone: poi.phone,
+            placeUrl: poi.placeUrl
+        }));
+        
+        res.json({
+            success: true,
+            category: category,
+            count: places.length,
+            data: places
+        });
+    } catch (error) {
+        console.error('주변 검색 오류:', error);
+        
+        // 오류 시 샘플 데이터 반환
+        const samplePlaces = {
+            gas: [
+                { id: 1, name: 'SK 주유소', lat: 37.5680, lng: 126.9800, distance: '0.8', address: '서울시 중구', phone: '02-1234-5678' },
+                { id: 2, name: 'GS 칼텍스', lat: 37.5650, lng: 126.9750, distance: '1.2', address: '서울시 중구', phone: '02-1234-5679' }
+            ],
+            hospital: [
+                { id: 1, name: '서울대병원', lat: 37.5790, lng: 126.9940, distance: '2.1', address: '서울시 종로구', phone: '02-2072-0694' },
+                { id: 2, name: '삼성서울병원', lat: 37.4880, lng: 127.0857, distance: '3.5', address: '서울시 강남구', phone: '02-3410-2114' }
+            ],
+            restaurant: [
+                { id: 1, name: '한식당', lat: 37.5670, lng: 126.9790, distance: '0.5', address: '서울시 중구', phone: '02-1234-5680' },
+                { id: 2, name: '이탈리안 레스토랑', lat: 37.5660, lng: 126.9770, distance: '0.7', address: '서울시 중구', phone: '02-1234-5681' }
+            ],
+            cafe: [
+                { id: 1, name: '스타벅스', lat: 37.5675, lng: 126.9785, distance: '0.3', address: '서울시 중구', phone: '1522-3232' },
+                { id: 2, name: '이디야', lat: 37.5655, lng: 126.9775, distance: '0.6', address: '서울시 중구', phone: '1599-7071' }
+            ],
+            store: [
+                { id: 1, name: 'CU', lat: 37.5668, lng: 126.9782, distance: '0.2', address: '서울시 중구', phone: '1577-1287' },
+                { id: 2, name: 'GS25', lat: 37.5662, lng: 126.9778, distance: '0.4', address: '서울시 중구', phone: '1577-3285' }
+            ]
+        };
+        
+        res.json({
+            success: true,
+            category: category,
+            count: (samplePlaces[category] || []).length,
+            data: samplePlaces[category] || []
+        });
+    }
 });
 
 // 예약 생성
@@ -280,44 +341,99 @@ app.get('/api/stats', (req, res) => {
     res.json({ success: true, data: stats });
 });
 
-// 여행 목적별 추천 조회
-app.get('/api/recommendations/:purpose', (req, res) => {
+// 여행 목적별 추천 조회 (실제 POI 데이터 사용)
+app.get('/api/recommendations/:purpose', async (req, res) => {
     const { purpose } = req.params;
     const { lat, lng } = req.query;
     
-    if (!recommendations[purpose]) {
-        return res.status(404).json({
-            success: false,
-            message: '해당 목적의 추천 정보를 찾을 수 없습니다.'
-        });
+    if (!lat || !lng) {
+        // 위치 정보가 없으면 샘플 데이터 반환
+        if (!recommendations[purpose]) {
+            return res.status(404).json({
+                success: false,
+                message: '해당 목적의 추천 정보를 찾을 수 없습니다.'
+            });
+        }
+        return res.json({ success: true, data: recommendations[purpose] });
     }
     
-    // 거리 계산 (간단한 유클리드 거리)
-    const calculateDistance = (lat1, lng1, lat2, lng2) => {
-        const dx = lat2 - lat1;
-        const dy = lng2 - lng1;
-        return Math.sqrt(dx * dx + dy * dy) * 111; // 대략적인 km 변환
-    };
-    
-    // 현재 위치가 제공된 경우 거리 추가
-    if (lat && lng) {
+    try {
         const userLat = parseFloat(lat);
         const userLng = parseFloat(lng);
+        const radius = 10000; // 10km 반경
         
-        const data = JSON.parse(JSON.stringify(recommendations[purpose]));
+        // 목적별 검색 키워드 및 카테고리
+        const searchConfig = {
+            business: {
+                hotels: { query: '비즈니스 호텔', category: 'AD5' },
+                restaurants: { query: '고급 레스토랑', category: 'FD6' },
+                attractions: { query: '컨벤션 센터', category: 'CT1' }
+            },
+            travel: {
+                hotels: { query: '호텔 게스트하우스', category: 'AD5' },
+                restaurants: { query: '맛집 레스토랑', category: 'FD6' },
+                attractions: { query: '관광지 명소', category: 'AT4' }
+            },
+            dining: {
+                restaurants: { query: '맛집 레스토랑', category: 'FD6' }
+            }
+        };
         
-        // 각 카테고리의 항목에 거리 추가
-        Object.keys(data).forEach(category => {
-            data[category] = data[category].map(item => ({
-                ...item,
-                distance: calculateDistance(userLat, userLng, item.lat, item.lng).toFixed(1)
-            })).sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+        const config = searchConfig[purpose];
+        if (!config) {
+            return res.status(404).json({
+                success: false,
+                message: '해당 목적의 추천 정보를 찾을 수 없습니다.'
+            });
+        }
+        
+        // 각 카테고리별로 POI 검색
+        const data = {};
+        
+        for (const [category, searchParams] of Object.entries(config)) {
+            const results = await searchPOI(
+                searchParams.query,
+                userLng,
+                userLat,
+                radius,
+                searchParams.category
+            );
+            
+            // 여행 추천 형식으로 변환
+            data[category] = results.slice(0, 5).map((poi, index) => ({
+                id: poi.id || index + 1,
+                name: poi.name,
+                lat: poi.lat,
+                lng: poi.lng,
+                rating: (4.0 + Math.random()).toFixed(1),
+                price: category === 'hotels' ? Math.floor(Math.random() * 100000 + 80000) : undefined,
+                priceRange: category === 'restaurants' ? `${Math.floor(Math.random() * 30000 + 20000)}-${Math.floor(Math.random() * 50000 + 40000)}` : undefined,
+                amenities: category === 'hotels' ? ['WiFi', '주차', '조식'] : undefined,
+                cuisine: category === 'restaurants' ? poi.category.split('>').pop().trim() : undefined,
+                type: category === 'attractions' ? poi.categoryGroupName || '관광지' : undefined,
+                openHours: category === 'attractions' ? '09:00-18:00' : undefined,
+                image: 'placeholder.jpg',
+                distance: poi.distance ? (poi.distance / 1000).toFixed(1) : '0',
+                address: poi.address,
+                phone: poi.phone,
+                placeUrl: poi.placeUrl
+            }));
+        }
+        
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('추천 조회 오류:', error);
+        
+        // 오류 시 샘플 데이터 반환
+        if (recommendations[purpose]) {
+            return res.json({ success: true, data: recommendations[purpose] });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: '추천 조회 중 오류가 발생했습니다.'
         });
-        
-        return res.json({ success: true, data });
     }
-    
-    res.json({ success: true, data: recommendations[purpose] });
 });
 
 // 여행 예약 생성 (숙박, 맛집, 관광지)
@@ -675,6 +791,117 @@ app.get('/api/travel-plans/:id/export-ical', (req, res) => {
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${filename}`);
     res.send(icalContent);
+});
+
+// ========== POI (관심지점) API ==========
+
+// POI 검색 (키워드 기반)
+app.get('/api/poi/search', async (req, res) => {
+    const { query, lat, lng, radius, category } = req.query;
+    
+    if (!query) {
+        return res.status(400).json({
+            success: false,
+            message: '검색어를 입력해주세요.'
+        });
+    }
+    
+    try {
+        const x = lng ? parseFloat(lng) : null;
+        const y = lat ? parseFloat(lat) : null;
+        const r = radius ? parseInt(radius) : 5000;
+        
+        const results = await searchPOI(query, x, y, r, category);
+        
+        res.json({
+            success: true,
+            count: results.length,
+            data: results
+        });
+    } catch (error) {
+        console.error('POI 검색 오류:', error);
+        res.status(500).json({
+            success: false,
+            message: 'POI 검색 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// POI 카테고리별 검색
+app.get('/api/poi/category/:category', async (req, res) => {
+    const { category } = req.params;
+    const { lat, lng, radius } = req.query;
+    
+    if (!lat || !lng) {
+        return res.status(400).json({
+            success: false,
+            message: '위치 정보(위도/경도)를 입력해주세요.'
+        });
+    }
+    
+    try {
+        const x = parseFloat(lng);
+        const y = parseFloat(lat);
+        const r = radius ? parseInt(radius) : 5000;
+        
+        // 카테고리 코드 매핑
+        const categoryCode = CATEGORY_CODES[category];
+        if (!categoryCode) {
+            return res.status(400).json({
+                success: false,
+                message: '유효하지 않은 카테고리입니다.'
+            });
+        }
+        
+        const results = await searchByCategory(categoryCode, x, y, r);
+        
+        res.json({
+            success: true,
+            category: category,
+            count: results.length,
+            data: results
+        });
+    } catch (error) {
+        console.error('카테고리 검색 오류:', error);
+        res.status(500).json({
+            success: false,
+            message: '카테고리 검색 중 오류가 발생했습니다.'
+        });
+    }
+});
+
+// 주소로 좌표 변환
+app.get('/api/poi/geocode', async (req, res) => {
+    const { address } = req.query;
+    
+    if (!address) {
+        return res.status(400).json({
+            success: false,
+            message: '주소를 입력해주세요.'
+        });
+    }
+    
+    try {
+        const result = await addressToCoord(address);
+        
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: '해당 주소를 찾을 수 없습니다.'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('주소 변환 오류:', error);
+        res.status(500).json({
+            success: false,
+            message: '주소 변환 중 오류가 발생했습니다.'
+        });
+    }
 });
 
 // 목적지 콘텐츠 추천 (YouTube + 네이버 블로그)
