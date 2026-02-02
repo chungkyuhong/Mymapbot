@@ -26,6 +26,24 @@ let bookings = [];
 
 // API 엔드포인트
 
+// 주차장 검색 (특정 경로이므로 먼저 정의)
+app.get('/api/parking/search', (req, res) => {
+    const { query, available } = req.query;
+    let results = parkingLots;
+    
+    if (query) {
+        results = results.filter(lot => 
+            lot.name.toLowerCase().includes(query.toLowerCase())
+        );
+    }
+    
+    if (available === 'true') {
+        results = results.filter(lot => lot.availableSpots > 0);
+    }
+    
+    res.json({ success: true, data: results });
+});
+
 // 주차장 목록 조회
 app.get('/api/parking', (req, res) => {
     res.json({
@@ -42,24 +60,6 @@ app.get('/api/parking/:id', (req, res) => {
     } else {
         res.status(404).json({ success: false, message: '주차장을 찾을 수 없습니다.' });
     }
-});
-
-// 주차장 검색
-app.get('/api/parking/search', (req, res) => {
-    const { query, available } = req.query;
-    let results = parkingLots;
-    
-    if (query) {
-        results = results.filter(lot => 
-            lot.name.toLowerCase().includes(query.toLowerCase())
-        );
-    }
-    
-    if (available === 'true') {
-        results = results.filter(lot => lot.availableSpots > 0);
-    }
-    
-    res.json({ success: true, data: results });
 });
 
 // 경로 찾기

@@ -14,20 +14,41 @@ const appState = {
 
 // 지도 초기화
 function initMap() {
-    map = L.map('map').setView([currentLocation.lat, currentLocation.lng], 13);
-    
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    
-    // 현재 위치 마커
-    L.marker([currentLocation.lat, currentLocation.lng], {
-        icon: L.divIcon({
-            className: 'custom-marker',
-            html: '📍',
-            iconSize: [40, 40]
-        })
-    }).addTo(map).bindPopup('현재 위치');
+    try {
+        map = L.map('map').setView([currentLocation.lat, currentLocation.lng], 13);
+        
+        // 여러 타일 서버 시도 (폴백 지원)
+        const tileUrls = [
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',
+            'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png'
+        ];
+        
+        let tileLayer = L.tileLayer(tileUrls[0], {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
+            errorTileUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI1NiIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=='
+        }).addTo(map);
+        
+        // 타일 로드 에러 핸들링
+        tileLayer.on('tileerror', function(error) {
+            console.warn('Tile loading error, attempting fallback...', error);
+        });
+        
+        // 현재 위치 마커
+        L.marker([currentLocation.lat, currentLocation.lng], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: '📍',
+                iconSize: [40, 40]
+            })
+        }).addTo(map).bindPopup('현재 위치');
+        
+        console.log('✅ 지도 초기화 완료');
+    } catch (error) {
+        console.error('❌ 지도 초기화 실패:', error);
+        alert('지도를 로드하는데 실패했습니다. 페이지를 새로고침 해주세요.');
+    }
 }
 
 // 샘플 주차장 데이터 생성
