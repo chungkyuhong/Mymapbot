@@ -24,6 +24,10 @@ let parkingLots = [
 let complaints = [];
 let bookings = [];
 
+// 여행 플래너 데이터
+let travelPlans = [];
+let itineraries = [];
+
 // 여행 목적별 추천 데이터
 const recommendations = {
     business: {
@@ -369,6 +373,308 @@ app.post('/api/travel-bookings', (req, res) => {
         message: '예약이 완료되었습니다.',
         data: booking
     });
+});
+
+// ===== 여행 플래너 API =====
+
+// 여행 계획 생성
+app.post('/api/travel-plans', (req, res) => {
+    const { title, destination, startDate, endDate, budget, travelers, notes } = req.body;
+    
+    if (!title || !destination || !startDate || !endDate) {
+        return res.status(400).json({
+            success: false,
+            message: '필수 정보를 입력해주세요.'
+        });
+    }
+    
+    const plan = {
+        id: travelPlans.length + 1,
+        title,
+        destination,
+        startDate,
+        endDate,
+        budget: budget || 0,
+        travelers: travelers || 1,
+        notes: notes || '',
+        status: 'planning', // planning, confirmed, completed, cancelled
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    travelPlans.push(plan);
+    
+    res.json({
+        success: true,
+        message: '여행 계획이 생성되었습니다.',
+        data: plan
+    });
+});
+
+// 여행 계획 목록 조회
+app.get('/api/travel-plans', (req, res) => {
+    const { status } = req.query;
+    
+    let plans = travelPlans;
+    if (status) {
+        plans = plans.filter(p => p.status === status);
+    }
+    
+    res.json({
+        success: true,
+        data: plans
+    });
+});
+
+// 여행 계획 상세 조회
+app.get('/api/travel-plans/:id', (req, res) => {
+    const plan = travelPlans.find(p => p.id === parseInt(req.params.id));
+    
+    if (!plan) {
+        return res.status(404).json({
+            success: false,
+            message: '여행 계획을 찾을 수 없습니다.'
+        });
+    }
+    
+    // 해당 계획의 일정 가져오기
+    const planItineraries = itineraries.filter(i => i.planId === plan.id);
+    
+    res.json({
+        success: true,
+        data: {
+            ...plan,
+            itineraries: planItineraries
+        }
+    });
+});
+
+// 여행 계획 수정
+app.put('/api/travel-plans/:id', (req, res) => {
+    const index = travelPlans.findIndex(p => p.id === parseInt(req.params.id));
+    
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: '여행 계획을 찾을 수 없습니다.'
+        });
+    }
+    
+    const { title, destination, startDate, endDate, budget, travelers, notes, status } = req.body;
+    
+    travelPlans[index] = {
+        ...travelPlans[index],
+        title: title || travelPlans[index].title,
+        destination: destination || travelPlans[index].destination,
+        startDate: startDate || travelPlans[index].startDate,
+        endDate: endDate || travelPlans[index].endDate,
+        budget: budget !== undefined ? budget : travelPlans[index].budget,
+        travelers: travelers || travelPlans[index].travelers,
+        notes: notes !== undefined ? notes : travelPlans[index].notes,
+        status: status || travelPlans[index].status,
+        updatedAt: new Date().toISOString()
+    };
+    
+    res.json({
+        success: true,
+        message: '여행 계획이 수정되었습니다.',
+        data: travelPlans[index]
+    });
+});
+
+// 여행 계획 삭제
+app.delete('/api/travel-plans/:id', (req, res) => {
+    const index = travelPlans.findIndex(p => p.id === parseInt(req.params.id));
+    
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: '여행 계획을 찾을 수 없습니다.'
+        });
+    }
+    
+    // 관련 일정도 삭제
+    itineraries = itineraries.filter(i => i.planId !== parseInt(req.params.id));
+    travelPlans.splice(index, 1);
+    
+    res.json({
+        success: true,
+        message: '여행 계획이 삭제되었습니다.'
+    });
+});
+
+// 일정 추가
+app.post('/api/itineraries', (req, res) => {
+    const { planId, date, time, title, location, type, notes, lat, lng } = req.body;
+    
+    if (!planId || !date || !title) {
+        return res.status(400).json({
+            success: false,
+            message: '필수 정보를 입력해주세요.'
+        });
+    }
+    
+    // 계획 존재 확인
+    const plan = travelPlans.find(p => p.id === parseInt(planId));
+    if (!plan) {
+        return res.status(404).json({
+            success: false,
+            message: '여행 계획을 찾을 수 없습니다.'
+        });
+    }
+    
+    const itinerary = {
+        id: itineraries.length + 1,
+        planId: parseInt(planId),
+        date,
+        time: time || '09:00',
+        title,
+        location: location || '',
+        type: type || 'activity', // activity, accommodation, restaurant, transport
+        notes: notes || '',
+        lat: lat || null,
+        lng: lng || null,
+        completed: false,
+        createdAt: new Date().toISOString()
+    };
+    
+    itineraries.push(itinerary);
+    
+    res.json({
+        success: true,
+        message: '일정이 추가되었습니다.',
+        data: itinerary
+    });
+});
+
+// 일정 목록 조회
+app.get('/api/itineraries', (req, res) => {
+    const { planId, date } = req.query;
+    
+    let items = itineraries;
+    
+    if (planId) {
+        items = items.filter(i => i.planId === parseInt(planId));
+    }
+    
+    if (date) {
+        items = items.filter(i => i.date === date);
+    }
+    
+    // 날짜와 시간순 정렬
+    items.sort((a, b) => {
+        const dateCompare = new Date(a.date) - new Date(b.date);
+        if (dateCompare !== 0) return dateCompare;
+        return a.time.localeCompare(b.time);
+    });
+    
+    res.json({
+        success: true,
+        data: items
+    });
+});
+
+// 일정 수정
+app.put('/api/itineraries/:id', (req, res) => {
+    const index = itineraries.findIndex(i => i.id === parseInt(req.params.id));
+    
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: '일정을 찾을 수 없습니다.'
+        });
+    }
+    
+    const { date, time, title, location, type, notes, completed, lat, lng } = req.body;
+    
+    itineraries[index] = {
+        ...itineraries[index],
+        date: date || itineraries[index].date,
+        time: time || itineraries[index].time,
+        title: title || itineraries[index].title,
+        location: location !== undefined ? location : itineraries[index].location,
+        type: type || itineraries[index].type,
+        notes: notes !== undefined ? notes : itineraries[index].notes,
+        completed: completed !== undefined ? completed : itineraries[index].completed,
+        lat: lat !== undefined ? lat : itineraries[index].lat,
+        lng: lng !== undefined ? lng : itineraries[index].lng
+    };
+    
+    res.json({
+        success: true,
+        message: '일정이 수정되었습니다.',
+        data: itineraries[index]
+    });
+});
+
+// 일정 삭제
+app.delete('/api/itineraries/:id', (req, res) => {
+    const index = itineraries.findIndex(i => i.id === parseInt(req.params.id));
+    
+    if (index === -1) {
+        return res.status(404).json({
+            success: false,
+            message: '일정을 찾을 수 없습니다.'
+        });
+    }
+    
+    itineraries.splice(index, 1);
+    
+    res.json({
+        success: true,
+        message: '일정이 삭제되었습니다.'
+    });
+});
+
+// 구글 캘린더 연동 (iCalendar 형식 내보내기)
+app.get('/api/travel-plans/:id/export-ical', (req, res) => {
+    const plan = travelPlans.find(p => p.id === parseInt(req.params.id));
+    
+    if (!plan) {
+        return res.status(404).json({
+            success: false,
+            message: '여행 계획을 찾을 수 없습니다.'
+        });
+    }
+    
+    const planItineraries = itineraries.filter(i => i.planId === plan.id);
+    
+    // iCalendar 형식 생성
+    let icalContent = 'BEGIN:VCALENDAR\n';
+    icalContent += 'VERSION:2.0\n';
+    icalContent += 'PRODID:-//Mobility Platform//Travel Planner//EN\n';
+    icalContent += `X-WR-CALNAME:${plan.title}\n`;
+    icalContent += 'X-WR-TIMEZONE:Asia/Seoul\n';
+    
+    planItineraries.forEach(item => {
+        const startDateTime = `${item.date.replace(/-/g, '')}T${item.time.replace(':', '')}00`;
+        const endDateTime = `${item.date.replace(/-/g, '')}T${(parseInt(item.time.split(':')[0]) + 1).toString().padStart(2, '0')}${item.time.split(':')[1]}00`;
+        
+        icalContent += 'BEGIN:VEVENT\n';
+        icalContent += `UID:${item.id}@mobilityplatform\n`;
+        icalContent += `DTSTART:${startDateTime}\n`;
+        icalContent += `DTEND:${endDateTime}\n`;
+        icalContent += `SUMMARY:${item.title}\n`;
+        if (item.location) {
+            icalContent += `LOCATION:${item.location}\n`;
+        }
+        if (item.notes) {
+            icalContent += `DESCRIPTION:${item.notes}\n`;
+        }
+        if (item.lat && item.lng) {
+            icalContent += `GEO:${item.lat};${item.lng}\n`;
+        }
+        icalContent += 'END:VEVENT\n';
+    });
+    
+    icalContent += 'END:VCALENDAR';
+    
+    // 파일명을 URL 인코딩 (한글 지원)
+    const filename = encodeURIComponent(plan.title) + '.ics';
+    
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${filename}`);
+    res.send(icalContent);
 });
 
 // 헬스 체크

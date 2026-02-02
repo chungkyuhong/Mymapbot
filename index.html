@@ -16,6 +16,7 @@
                 <button class="nav-btn active" data-tab="parking">주차</button>
                 <button class="nav-btn" data-tab="route">경로</button>
                 <button class="nav-btn" data-tab="travel">여행</button>
+                <button class="nav-btn" data-tab="planner">플래너</button>
                 <button class="nav-btn" data-tab="complaint">민원</button>
                 <button class="nav-btn" data-tab="info">안내</button>
                 <button class="nav-btn" data-tab="booking">예약</button>
@@ -98,6 +99,148 @@
                         <p style="padding: 1rem; text-align: center; color: #6b7280;">
                             위에서 목적을 선택하면 맞춤 추천을 확인할 수 있습니다.
                         </p>
+                    </div>
+                </div>
+
+                <!-- 여행 플래너 탭 -->
+                <div class="tab-content" id="planner-tab">
+                    <h2>📅 여행 플래너</h2>
+                    
+                    <!-- 계획 목록/생성 토글 -->
+                    <div class="planner-mode-toggle">
+                        <button class="toggle-btn active" data-mode="list">내 여행 계획</button>
+                        <button class="toggle-btn" data-mode="create">새 계획 만들기</button>
+                    </div>
+
+                    <!-- 계획 목록 뷰 -->
+                    <div class="planner-view active" id="planner-list-view">
+                        <div class="plan-list" id="planList">
+                            <p style="padding: 1rem; text-align: center; color: #6b7280;">
+                                아직 여행 계획이 없습니다.<br>
+                                '새 계획 만들기'를 클릭해보세요!
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 새 계획 생성 뷰 -->
+                    <div class="planner-view" id="planner-create-view">
+                        <form class="planner-form" id="planForm">
+                            <div class="form-group">
+                                <label>여행 제목 *</label>
+                                <input type="text" id="planTitle" placeholder="예: 제주도 가족 여행" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>목적지 *</label>
+                                <input type="text" id="planDestination" placeholder="예: 제주도" required>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>출발일 *</label>
+                                    <input type="date" id="planStartDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>도착일 *</label>
+                                    <input type="date" id="planEndDate" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>예산</label>
+                                    <input type="number" id="planBudget" placeholder="원" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>인원</label>
+                                    <input type="number" id="planTravelers" value="1" min="1">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>메모</label>
+                                <textarea id="planNotes" rows="3" placeholder="여행에 대한 메모를 입력하세요..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="primary-btn">계획 생성</button>
+                        </form>
+                    </div>
+
+                    <!-- 계획 상세 뷰 -->
+                    <div class="planner-view" id="planner-detail-view">
+                        <div class="plan-detail">
+                            <div class="plan-header">
+                                <button class="back-btn" id="backToPlanList">← 목록으로</button>
+                                <div class="plan-actions">
+                                    <button class="action-btn" id="exportToCalendar">📅 캘린더로 내보내기</button>
+                                    <button class="action-btn" id="editPlan">✏️ 수정</button>
+                                    <button class="action-btn danger" id="deletePlan">🗑️ 삭제</button>
+                                </div>
+                            </div>
+                            
+                            <div class="plan-info" id="planInfo">
+                                <!-- 동적으로 생성 -->
+                            </div>
+                            
+                            <div class="itinerary-section">
+                                <div class="section-header">
+                                    <h3>일정</h3>
+                                    <button class="add-btn" id="addItinerary">+ 일정 추가</button>
+                                </div>
+                                
+                                <div class="itinerary-list" id="itineraryList">
+                                    <!-- 동적으로 생성 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 일정 추가 모달 -->
+                    <div class="modal" id="itineraryModal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>일정 추가</h3>
+                                <button class="close-btn" id="closeItineraryModal">×</button>
+                            </div>
+                            <form class="modal-form" id="itineraryForm">
+                                <div class="form-group">
+                                    <label>날짜 *</label>
+                                    <input type="date" id="itineraryDate" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>시간</label>
+                                    <input type="time" id="itineraryTime" value="09:00">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>제목 *</label>
+                                    <input type="text" id="itineraryTitle" placeholder="예: 성산일출봉 관람" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>장소</label>
+                                    <input type="text" id="itineraryLocation" placeholder="예: 성산일출봉">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>유형</label>
+                                    <select id="itineraryType">
+                                        <option value="activity">활동</option>
+                                        <option value="accommodation">숙박</option>
+                                        <option value="restaurant">식사</option>
+                                        <option value="transport">이동</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>메모</label>
+                                    <textarea id="itineraryNotes" rows="2"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="primary-btn">추가</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
@@ -219,5 +362,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="/main.js"></script>
+    <script type="module" src="/planner.js"></script>
 </body>
 </html>
