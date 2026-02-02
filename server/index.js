@@ -24,6 +24,52 @@ let parkingLots = [
 let complaints = [];
 let bookings = [];
 
+// 여행 목적별 추천 데이터
+const recommendations = {
+    business: {
+        hotels: [
+            { id: 1, name: '서울 비즈니스 호텔', lat: 37.5665, lng: 126.9780, rating: 4.5, price: 120000, amenities: ['WiFi', '회의실', '주차'], image: 'hotel1.jpg' },
+            { id: 2, name: '강남 비즈니스 센터', lat: 37.4979, lng: 127.0276, rating: 4.7, price: 150000, amenities: ['WiFi', '회의실', '라운지'], image: 'hotel2.jpg' },
+            { id: 3, name: '명동 비즈니스 인', lat: 37.5635, lng: 126.9843, rating: 4.3, price: 100000, amenities: ['WiFi', '비즈니스센터'], image: 'hotel3.jpg' }
+        ],
+        restaurants: [
+            { id: 1, name: '한정식 서울', lat: 37.5670, lng: 126.9790, cuisine: '한식', rating: 4.6, priceRange: '30000-50000', image: 'rest1.jpg' },
+            { id: 2, name: '일식당 미나토', lat: 37.5000, lng: 127.0300, cuisine: '일식', rating: 4.8, priceRange: '40000-60000', image: 'rest2.jpg' }
+        ],
+        attractions: [
+            { id: 1, name: '코엑스 컨벤션', lat: 37.5112, lng: 127.0591, type: '컨벤션', openHours: '09:00-18:00', image: 'attr1.jpg' },
+            { id: 2, name: '여의도 금융가', lat: 37.5219, lng: 126.9245, type: '비즈니스지구', openHours: '24시간', image: 'attr2.jpg' }
+        ]
+    },
+    travel: {
+        hotels: [
+            { id: 4, name: '북촌 한옥 게스트하우스', lat: 37.5820, lng: 126.9838, rating: 4.8, price: 80000, amenities: ['WiFi', '전통체험', '조식'], image: 'hotel4.jpg' },
+            { id: 5, name: '홍대 부티크 호텔', lat: 37.5560, lng: 126.9236, rating: 4.6, price: 90000, amenities: ['WiFi', '루프탑', '조식'], image: 'hotel5.jpg' },
+            { id: 6, name: '한강뷰 리조트', lat: 37.5280, lng: 126.9291, rating: 4.9, price: 180000, amenities: ['WiFi', '수영장', '스파'], image: 'hotel6.jpg' }
+        ],
+        restaurants: [
+            { id: 3, name: '광장시장', lat: 37.5704, lng: 126.9998, cuisine: '한식', rating: 4.7, priceRange: '5000-15000', image: 'rest3.jpg' },
+            { id: 4, name: '이태원 세계음식거리', lat: 37.5343, lng: 126.9943, cuisine: '세계음식', rating: 4.5, priceRange: '15000-30000', image: 'rest4.jpg' },
+            { id: 5, name: '강남 파인다이닝', lat: 37.5048, lng: 127.0249, cuisine: '퓨전', rating: 4.9, priceRange: '50000-100000', image: 'rest5.jpg' }
+        ],
+        attractions: [
+            { id: 3, name: '경복궁', lat: 37.5796, lng: 126.9770, type: '문화유산', openHours: '09:00-18:00', image: 'attr3.jpg' },
+            { id: 4, name: '남산타워', lat: 37.5512, lng: 126.9882, type: '관광명소', openHours: '10:00-23:00', image: 'attr4.jpg' },
+            { id: 5, name: '한강공원', lat: 37.5270, lng: 126.9340, type: '레저', openHours: '24시간', image: 'attr5.jpg' },
+            { id: 6, name: '명동 쇼핑거리', lat: 37.5636, lng: 126.9862, type: '쇼핑', openHours: '10:00-22:00', image: 'attr6.jpg' }
+        ]
+    },
+    dining: {
+        restaurants: [
+            { id: 6, name: '미슐랭 프렌치', lat: 37.5270, lng: 127.0385, cuisine: '프렌치', rating: 4.9, priceRange: '80000-150000', image: 'rest6.jpg' },
+            { id: 7, name: '강남 스시야', lat: 37.5010, lng: 127.0268, cuisine: '일식', rating: 4.8, priceRange: '60000-100000', image: 'rest7.jpg' },
+            { id: 8, name: '압구정 이탈리안', lat: 37.5273, lng: 127.0286, cuisine: '이탈리안', rating: 4.7, priceRange: '40000-70000', image: 'rest8.jpg' },
+            { id: 9, name: '삼청동 카페거리', lat: 37.5827, lng: 126.9829, cuisine: '카페', rating: 4.6, priceRange: '5000-15000', image: 'rest9.jpg' },
+            { id: 10, name: '을지로 포차거리', lat: 37.5663, lng: 126.9910, cuisine: '한식', rating: 4.5, priceRange: '10000-30000', image: 'rest10.jpg' }
+        ]
+    }
+};
+
 // API 엔드포인트
 
 // 주차장 검색 (특정 경로이므로 먼저 정의)
@@ -228,6 +274,101 @@ app.get('/api/stats', (req, res) => {
     };
     
     res.json({ success: true, data: stats });
+});
+
+// 여행 목적별 추천 조회
+app.get('/api/recommendations/:purpose', (req, res) => {
+    const { purpose } = req.params;
+    const { lat, lng } = req.query;
+    
+    if (!recommendations[purpose]) {
+        return res.status(404).json({
+            success: false,
+            message: '해당 목적의 추천 정보를 찾을 수 없습니다.'
+        });
+    }
+    
+    // 거리 계산 (간단한 유클리드 거리)
+    const calculateDistance = (lat1, lng1, lat2, lng2) => {
+        const dx = lat2 - lat1;
+        const dy = lng2 - lng1;
+        return Math.sqrt(dx * dx + dy * dy) * 111; // 대략적인 km 변환
+    };
+    
+    // 현재 위치가 제공된 경우 거리 추가
+    if (lat && lng) {
+        const userLat = parseFloat(lat);
+        const userLng = parseFloat(lng);
+        
+        const data = JSON.parse(JSON.stringify(recommendations[purpose]));
+        
+        // 각 카테고리의 항목에 거리 추가
+        Object.keys(data).forEach(category => {
+            data[category] = data[category].map(item => ({
+                ...item,
+                distance: calculateDistance(userLat, userLng, item.lat, item.lng).toFixed(1)
+            })).sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+        });
+        
+        return res.json({ success: true, data });
+    }
+    
+    res.json({ success: true, data: recommendations[purpose] });
+});
+
+// 여행 예약 생성 (숙박, 맛집, 관광지)
+app.post('/api/travel-bookings', (req, res) => {
+    const { type, itemId, purpose, date, time, guests, specialRequest } = req.body;
+    
+    if (!type || !itemId || !purpose || !date) {
+        return res.status(400).json({
+            success: false,
+            message: '필수 정보를 입력해주세요.'
+        });
+    }
+    
+    // 해당 항목 찾기
+    let item = null;
+    const purposeData = recommendations[purpose];
+    
+    if (purposeData) {
+        if (type === 'hotel' && purposeData.hotels) {
+            item = purposeData.hotels.find(h => h.id === itemId);
+        } else if (type === 'restaurant' && purposeData.restaurants) {
+            item = purposeData.restaurants.find(r => r.id === itemId);
+        } else if (type === 'attraction' && purposeData.attractions) {
+            item = purposeData.attractions.find(a => a.id === itemId);
+        }
+    }
+    
+    if (!item) {
+        return res.status(404).json({
+            success: false,
+            message: '예약하려는 항목을 찾을 수 없습니다.'
+        });
+    }
+    
+    const booking = {
+        id: bookings.length + 1,
+        type,
+        itemId,
+        itemName: item.name,
+        purpose,
+        date,
+        time: time || '미정',
+        guests: guests || 1,
+        specialRequest: specialRequest || '',
+        status: 'confirmed',
+        createdAt: new Date().toISOString()
+    };
+    
+    bookings.push(booking);
+    
+    res.json({
+        success: true,
+        message: '예약이 완료되었습니다.',
+        data: booking
+    });
 });
 
 // 헬스 체크

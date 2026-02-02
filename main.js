@@ -9,7 +9,9 @@ const appState = {
     parkingLots: [],
     complaints: [],
     bookings: [],
-    selectedCategory: null
+    selectedCategory: null,
+    currentPurpose: null,
+    recommendations: null
 };
 
 // 지도 초기화
@@ -522,4 +524,227 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 예약하기
     document.getElementById('submitBooking').addEventListener('click', submitBooking);
+    
+    // 여행 목적 선택
+    document.querySelectorAll('.purpose-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const purpose = this.getAttribute('data-purpose');
+            selectPurpose(purpose);
+        });
+    });
 });
+
+// 여행 목적 선택
+async function selectPurpose(purpose) {
+    appState.currentPurpose = purpose;
+    
+    // 버튼 활성화 표시
+    document.querySelectorAll('.purpose-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    try {
+        const response = await fetch(`/api/recommendations/${purpose}?lat=${currentLocation.lat}&lng=${currentLocation.lng}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            appState.recommendations = result.data;
+            renderRecommendations(purpose);
+            addRecommendationMarkers();
+        }
+    } catch (error) {
+        console.error('추천 정보 로드 실패:', error);
+        alert('추천 정보를 불러오는데 실패했습니다.');
+    }
+}
+
+// 추천 정보 렌더링
+function renderRecommendations(purpose) {
+    const container = document.getElementById('recommendationList');
+    if (!appState.recommendations) {
+        container.innerHTML = '<p style="padding: 1rem; text-align: center;">추천 정보를 불러오는 중...</p>';
+        return;
+    }
+    
+    let html = '';
+    
+    // 숙박 정보
+    if (appState.recommendations.hotels && appState.recommendations.hotels.length > 0) {
+        html += '<div class="recommendation-section"><h3>🏨 추천 숙박</h3>';
+        appState.recommendations.hotels.forEach(hotel => {
+            html += `
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <h4>${hotel.name}</h4>
+                        <div class="recommendation-rating">⭐ ${hotel.rating}</div>
+                    </div>
+                    <div class="recommendation-info">
+                        <span>💰 ${hotel.price.toLocaleString()}원</span>
+                        ${hotel.distance ? `<span>📍 ${hotel.distance}km</span>` : ''}
+                    </div>
+                    <div class="recommendation-amenities">
+                        ${hotel.amenities.map(a => `<span class="amenity-tag">${a}</span>`).join('')}
+                    </div>
+                    <button class="recommendation-btn" onclick="bookItem('hotel', ${hotel.id}, '${purpose}')">
+                        예약하기
+                    </button>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    // 맛집 정보
+    if (appState.recommendations.restaurants && appState.recommendations.restaurants.length > 0) {
+        html += '<div class="recommendation-section"><h3>🍽️ 추천 맛집</h3>';
+        appState.recommendations.restaurants.forEach(restaurant => {
+            html += `
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <h4>${restaurant.name}</h4>
+                        <div class="recommendation-rating">⭐ ${restaurant.rating}</div>
+                    </div>
+                    <div class="recommendation-info">
+                        <span>🍴 ${restaurant.cuisine}</span>
+                        ${restaurant.distance ? `<span>📍 ${restaurant.distance}km</span>` : ''}
+                    </div>
+                    <div class="recommendation-price">💰 ${restaurant.priceRange}원</div>
+                    <button class="recommendation-btn" onclick="bookItem('restaurant', ${restaurant.id}, '${purpose}')">
+                        예약하기
+                    </button>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    // 관광지 정보
+    if (appState.recommendations.attractions && appState.recommendations.attractions.length > 0) {
+        html += '<div class="recommendation-section"><h3>🎯 추천 관광지</h3>';
+        appState.recommendations.attractions.forEach(attraction => {
+            html += `
+                <div class="recommendation-card">
+                    <div class="recommendation-header">
+                        <h4>${attraction.name}</h4>
+                        <div class="recommendation-type">${attraction.type}</div>
+                    </div>
+                    <div class="recommendation-info">
+                        <span>⏰ ${attraction.openHours}</span>
+                        ${attraction.distance ? `<span>📍 ${attraction.distance}km</span>` : ''}
+                    </div>
+                    <button class="recommendation-btn" onclick="viewOnMap(${attraction.lat}, ${attraction.lng}, '${attraction.name}')">
+                        지도에서 보기
+                    </button>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
+    
+    container.innerHTML = html || '<p style="padding: 1rem; text-align: center;">추천 정보가 없습니다.</p>';
+}
+
+// 추천 장소 마커 추가
+function addRecommendationMarkers() {
+    clearMarkers();
+    
+    if (!appState.recommendations) return;
+    
+    const addMarker = (item, icon, category) => {
+        const marker = L.marker([item.lat, item.lng], {
+            icon: L.divIcon({
+                className: 'custom-marker',
+                html: icon,
+                iconSize: [40, 40]
+            })
+        }).addTo(map);
+        
+        let popupContent = `<strong>${item.name}</strong><br>`;
+        if (item.rating) popupContent += `⭐ ${item.rating}<br>`;
+        if (item.price) popupContent += `💰 ${item.price.toLocaleString()}원<br>`;
+        if (item.cuisine) popupContent += `🍴 ${item.cuisine}<br>`;
+        if (item.type) popupContent += `📍 ${item.type}<br>`;
+        if (item.distance) popupContent += `📏 ${item.distance}km<br>`;
+        
+        marker.bindPopup(popupContent);
+        markers.push(marker);
+    };
+    
+    if (appState.recommendations.hotels) {
+        appState.recommendations.hotels.forEach(hotel => addMarker(hotel, '🏨', 'hotel'));
+    }
+    if (appState.recommendations.restaurants) {
+        appState.recommendations.restaurants.forEach(rest => addMarker(rest, '🍽️', 'restaurant'));
+    }
+    if (appState.recommendations.attractions) {
+        appState.recommendations.attractions.forEach(attr => addMarker(attr, '🎯', 'attraction'));
+    }
+}
+
+// 예약하기
+async function bookItem(type, itemId, purpose) {
+    const date = prompt('예약 날짜를 입력하세요 (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+    if (!date) return;
+    
+    const time = prompt('예약 시간을 입력하세요 (HH:MM):', '10:00');
+    if (!time) return;
+    
+    const guests = prompt('인원 수를 입력하세요:', '2');
+    if (!guests) return;
+    
+    try {
+        const response = await fetch('/api/travel-bookings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type,
+                itemId,
+                purpose,
+                date,
+                time,
+                guests: parseInt(guests),
+                specialRequest: ''
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('예약이 완료되었습니다!\n\n' + 
+                  `예약 번호: ${result.data.id}\n` +
+                  `장소: ${result.data.itemName}\n` +
+                  `날짜: ${result.data.date}\n` +
+                  `시간: ${result.data.time}\n` +
+                  `인원: ${result.data.guests}명`);
+            updateStats();
+        } else {
+            alert('예약 실패: ' + result.message);
+        }
+    } catch (error) {
+        console.error('예약 실패:', error);
+        alert('예약 중 오류가 발생했습니다.');
+    }
+}
+
+// 지도에서 보기
+function viewOnMap(lat, lng, name) {
+    map.setView([lat, lng], 16);
+    
+    // 해당 위치에 임시 마커 표시
+    const tempMarker = L.marker([lat, lng], {
+        icon: L.divIcon({
+            className: 'custom-marker temp-marker',
+            html: '📍',
+            iconSize: [50, 50]
+        })
+    }).addTo(map);
+    
+    tempMarker.bindPopup(`<strong>${name}</strong><br>선택한 위치입니다.`).openPopup();
+    
+    setTimeout(() => {
+        map.removeLayer(tempMarker);
+    }, 5000);
+}
