@@ -1,0 +1,21 @@
+{
+  "name": "mobility-map-saas",
+  "version": "1.0.0",
+  "description": "모빌리티/지도 특화 미니 SaaS - 주차·경로·민원·안내·예약 통합 플랫폼",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
