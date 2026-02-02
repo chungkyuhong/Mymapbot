@@ -561,6 +561,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+// 전역 함수로 노출 (HTML onclick에서 사용)
+window.bookItem = bookItem;
+window.viewOnMap = viewOnMap;
+window.focusParking = focusParking;
+
 // 여행 목적 선택
 async function selectPurpose(purpose) {
     appState.currentPurpose = purpose;
