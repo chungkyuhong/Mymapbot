@@ -2,8 +2,13 @@
 const translations = {
     ko: {
         // 헤더 & 네비게이션
-        appTitle: '마이맵봇',
+        appTitle: '🤖 마이맵봇 (MyMapBot) - AI 기반 스마트 맵 플랫폼',
+        appName: '마이맵봇',
         navParking: '주차',
+        login: '로그인',
+        signup: '회원가입',
+        logout: '로그아웃',
+        myProfile: '내 정보',
         navRoute: '경로',
         navTravel: '여행',
         navPlanner: '일정',
@@ -137,11 +142,37 @@ const translations = {
         // 통계
         availableSpotsStat: '이용 가능',
         activeComplaintsStat: '처리 중 신고',
-        todayBookingsStat: '오늘 예약'
+        todayBookingsStat: '오늘 예약',
+        
+        // 인증
+        loginTitle: '로그인',
+        signupTitle: '회원가입',
+        email: '이메일',
+        password: '비밀번호',
+        confirmPassword: '비밀번호 확인',
+        name: '이름',
+        phone: '전화번호',
+        loginButton: '로그인',
+        signupButton: '회원가입',
+        forgotPassword: '비밀번호 찾기',
+        noAccount: '계정이 없으신가요?',
+        hasAccount: '이미 계정이 있으신가요?',
+        loginSuccess: '로그인 성공!',
+        signupSuccess: '회원가입 완료!',
+        loginFailed: '로그인 실패',
+        signupFailed: '회원가입 실패',
+        invalidEmail: '유효하지 않은 이메일',
+        passwordMismatch: '비밀번호가 일치하지 않습니다',
+        requiredField: '필수 입력 항목입니다'
     },
     en: {
-        appTitle: 'MyMapBot',
+        appTitle: '🤖 MyMapBot - AI-Powered Smart Map Platform',
+        appName: 'MyMapBot',
         navParking: 'Parking',
+        login: 'Login',
+        signup: 'Sign Up',
+        logout: 'Logout',
+        myProfile: 'My Profile',
         navRoute: 'Route',
         navTravel: 'Travel',
         navPlanner: 'Planner',
@@ -263,11 +294,37 @@ const translations = {
         
         availableSpotsStat: 'Available',
         activeComplaintsStat: 'Active Reports',
-        todayBookingsStat: 'Today\'s Bookings'
+        todayBookingsStat: 'Today\'s Bookings',
+        
+        // Auth
+        loginTitle: 'Login',
+        signupTitle: 'Sign Up',
+        email: 'Email',
+        password: 'Password',
+        confirmPassword: 'Confirm Password',
+        name: 'Name',
+        phone: 'Phone',
+        loginButton: 'Login',
+        signupButton: 'Sign Up',
+        forgotPassword: 'Forgot Password?',
+        noAccount: 'Don\'t have an account?',
+        hasAccount: 'Already have an account?',
+        loginSuccess: 'Login successful!',
+        signupSuccess: 'Sign up complete!',
+        loginFailed: 'Login failed',
+        signupFailed: 'Sign up failed',
+        invalidEmail: 'Invalid email',
+        passwordMismatch: 'Passwords do not match',
+        requiredField: 'This field is required'
     },
     ja: {
-        appTitle: 'マイマップボット',
+        appTitle: '🤖 マイマップボット (MyMapBot) - AIスマートマップ',
+        appName: 'マイマップボット',
         navParking: '駐車',
+        login: 'ログイン',
+        signup: '会員登録',
+        logout: 'ログアウト',
+        myProfile: 'マイプロフィール',
         navRoute: '経路',
         navTravel: '旅行',
         navPlanner: 'プランナー',
@@ -389,11 +446,37 @@ const translations = {
         
         availableSpotsStat: '利用可能',
         activeComplaintsStat: '処理中の報告',
-        todayBookingsStat: '本日の予約'
+        todayBookingsStat: '本日の予約',
+        
+        // 認証
+        loginTitle: 'ログイン',
+        signupTitle: '会員登録',
+        email: 'メール',
+        password: 'パスワード',
+        confirmPassword: 'パスワード確認',
+        name: '名前',
+        phone: '電話番号',
+        loginButton: 'ログイン',
+        signupButton: '会員登録',
+        forgotPassword: 'パスワードを忘れました',
+        noAccount: 'アカウントがありませんか？',
+        hasAccount: '既にアカウントがありますか？',
+        loginSuccess: 'ログイン成功！',
+        signupSuccess: '会員登録完了！',
+        loginFailed: 'ログイン失敗',
+        signupFailed: '会員登録失敗',
+        invalidEmail: '無効なメール',
+        passwordMismatch: 'パスワードが一致しません',
+        requiredField: '必須項目です'
     },
     zh: {
-        appTitle: '我的地图机器人',
+        appTitle: '🤖 我的地图机器人 (MyMapBot) - AI智能地图',
+        appName: '我的地图机器人',
         navParking: '停车',
+        login: '登录',
+        signup: '注册',
+        logout: '登出',
+        myProfile: '我的资料',
         navRoute: '路线',
         navTravel: '旅行',
         navPlanner: '日程',
@@ -515,7 +598,28 @@ const translations = {
         
         availableSpotsStat: '可用',
         activeComplaintsStat: '处理中的报告',
-        todayBookingsStat: '今日预订'
+        todayBookingsStat: '今日预订',
+        
+        // 认证
+        loginTitle: '登录',
+        signupTitle: '注册',
+        email: '邮箱',
+        password: '密码',
+        confirmPassword: '确认密码',
+        name: '姓名',
+        phone: '电话',
+        loginButton: '登录',
+        signupButton: '注册',
+        forgotPassword: '忘记密码？',
+        noAccount: '没有账户？',
+        hasAccount: '已有账户？',
+        loginSuccess: '登录成功！',
+        signupSuccess: '注册完成！',
+        loginFailed: '登录失败',
+        signupFailed: '注册失败',
+        invalidEmail: '无效邮箱',
+        passwordMismatch: '密码不匹配',
+        requiredField: '必填项'
     }
 };
 

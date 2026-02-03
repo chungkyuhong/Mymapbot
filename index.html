@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="app.title">🤖 마이맵봇 (MyMapBot) - AI 기반 스마트 맵 플랫폼</title>
+    <title data-i18n="appTitle">🤖 마이맵봇 (MyMapBot) - AI 기반 스마트 맵 플랫폼</title>
     
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +27,7 @@
     <div class="app-container">
         <!-- 헤더 - 미래지향적 디자인 -->
         <header class="header">
-            <div class="logo" data-i18n="app.name">마이맵봇</div>
+            <div class="logo" data-i18n="appName">마이맵봇</div>
             <nav class="nav-menu">
                 <button class="nav-btn active" data-tab="parking">
                     <span data-i18n="navParking">🅿️ 주차</span>
@@ -52,6 +52,10 @@
                 </button>
             </nav>
             <div class="header-actions">
+                <button class="auth-btn" id="loginBtn" data-i18n="login">🔐 로그인</button>
+                <button class="auth-btn primary" id="signupBtn" data-i18n="signup">✨ 회원가입</button>
+                <button class="auth-btn" id="profileBtn" style="display:none;" data-i18n="myProfile">👤 내 정보</button>
+                <button class="auth-btn" id="logoutBtn" style="display:none;" data-i18n="logout">🚪 로그아웃</button>
                 <select id="app-language-select" class="language-selector">
                     <option value="ko">🇰🇷 한국어</option>
                     <option value="en">🇺🇸 English</option>
@@ -439,7 +443,7 @@
         <div class="chatbot-header">
             <div class="chatbot-title">
                 <span class="chatbot-icon">🤖</span>
-                <span data-i18n="app.name">마이맵봇</span>
+                <span data-i18n="appName">마이맵봇</span>
             </div>
             <div class="chatbot-language">
                 <select id="chatbot-language-select" class="language-select">
@@ -477,10 +481,68 @@
         </div>
     </div>
 
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="auth-modal" style="display:none;">
+        <div class="auth-modal-content">
+            <span class="auth-modal-close" data-modal="loginModal">&times;</span>
+            <h2 data-i18n="loginTitle">🔐 로그인</h2>
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="loginEmail" data-i18n="email">이메일</label>
+                    <input type="email" id="loginEmail" data-i18n-placeholder="email" placeholder="이메일" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword" data-i18n="password">비밀번호</label>
+                    <input type="password" id="loginPassword" data-i18n-placeholder="password" placeholder="비밀번호" required>
+                </div>
+                <button type="submit" class="auth-submit-btn" data-i18n="loginButton">로그인</button>
+                <div class="auth-links">
+                    <a href="#" data-i18n="forgotPassword">비밀번호 찾기</a>
+                    <a href="#" id="switchToSignup" data-i18n="noAccount">계정이 없으신가요?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="signupModal" class="auth-modal" style="display:none;">
+        <div class="auth-modal-content">
+            <span class="auth-modal-close" data-modal="signupModal">&times;</span>
+            <h2 data-i18n="signupTitle">✨ 회원가입</h2>
+            <form id="signupForm" class="auth-form">
+                <div class="form-group">
+                    <label for="signupName" data-i18n="name">이름</label>
+                    <input type="text" id="signupName" data-i18n-placeholder="name" placeholder="이름" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail" data-i18n="email">이메일</label>
+                    <input type="email" id="signupEmail" data-i18n-placeholder="email" placeholder="이메일" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPhone" data-i18n="phone">전화번호</label>
+                    <input type="tel" id="signupPhone" data-i18n-placeholder="phone" placeholder="전화번호" required>
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword" data-i18n="password">비밀번호</label>
+                    <input type="password" id="signupPassword" data-i18n-placeholder="password" placeholder="비밀번호 (8자 이상)" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirmPassword" data-i18n="confirmPassword">비밀번호 확인</label>
+                    <input type="password" id="signupConfirmPassword" data-i18n-placeholder="confirmPassword" placeholder="비밀번호 확인" required minlength="8">
+                </div>
+                <button type="submit" class="auth-submit-btn" data-i18n="signupButton">회원가입</button>
+                <div class="auth-links">
+                    <a href="#" id="switchToLogin" data-i18n="hasAccount">이미 계정이 있으신가요?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/i18n.js"></script>
     <script type="module" src="/main.js"></script>
     <script type="module" src="/planner.js"></script>
     <script src="/chatbot.js"></script>
+    <script src="/auth.js"></script>
 </body>
 </html>

@@ -2028,3 +2028,238 @@ body {
         right: 1rem;
     }
 }
+
+/* 인증 UI 스타일 */
+.auth-btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-left: 0.5rem;
+}
+
+.auth-btn.primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #ffffff;
+    border: none;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.auth-btn.primary:hover {
+    background: linear-gradient(135deg, #8b9aff, #8e5bb5);
+}
+
+/* 인증 모달 */
+.auth-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.auth-modal-content {
+    background: var(--bg-primary);
+    padding: 2.5rem;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 450px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: slideUp 0.3s ease;
+    border: 1px solid var(--border);
+}
+
+.auth-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.auth-modal-close:hover {
+    color: var(--text-primary);
+}
+
+.auth-modal h2 {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 0.9rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    background: var(--input-bg);
+    color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.auth-submit-btn {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #ffffff;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.auth-submit-btn:hover {
+    background: linear-gradient(135deg, #8b9aff, #8e5bb5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.auth-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-links a {
+    color: #667eea;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.auth-links a:hover {
+    color: #8b9aff;
+    text-decoration: underline;
+}
+
+/* 알림 */
+.auth-notification {
+    position: fixed;
+    top: -100px;
+    right: 2rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    font-weight: 600;
+    transition: top 0.3s ease;
+    border: 1px solid var(--border);
+}
+
+.auth-notification.show {
+    top: 2rem;
+}
+
+.auth-notification-success {
+    border-left: 4px solid #10b981;
+}
+
+.auth-notification-error {
+    border-left: 4px solid #ef4444;
+}
+
+.auth-notification-info {
+    border-left: 4px solid #3b82f6;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 다크모드 인증 UI */
+@media (prefers-color-scheme: dark) {
+    .auth-modal-content {
+        background: rgba(37, 43, 58, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .auth-form input {
+        background: rgba(45, 53, 72, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #f8f9fa;
+    }
+    
+    .auth-notification {
+        background: rgba(37, 43, 58, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .auth-modal-content {
+        width: 95%;
+        padding: 2rem 1.5rem;
+    }
+    
+    .auth-btn {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+        margin-left: 0.3rem;
+    }
+    
+    .header-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
