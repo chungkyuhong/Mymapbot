@@ -8,61 +8,78 @@
     /* 미래지향적 색상 팔레트 */
     --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     --primary-solid: #667eea;
+    --primary-dark: #5568d3;
     --secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --success: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
     --warning: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
     --danger: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
     
-    /* 다크 모드 색상 */
-    --dark-bg: #0a0e27;
-    --dark-card: #141b41;
-    --dark-hover: #1e2749;
-    --dark-border: rgba(255, 255, 255, 0.1);
+    /* 라이트 모드 색상 (기본) */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fc;
+    --bg-tertiary: #e9ecef;
+    --bg-hover: #f3f4f6;
+    --border-color: rgba(0, 0, 0, 0.08);
+    --text-primary: #0a0e27;
+    --text-secondary: #6b7280;
+    --text-muted: #9ca3af;
     
-    /* 라이트 색상 */
-    --light-bg: #f8f9fc;
-    --light-card: #ffffff;
-    --light-border: rgba(0, 0, 0, 0.08);
+    /* 카드 & 컴포넌트 */
+    --card-bg: #ffffff;
+    --card-border: rgba(0, 0, 0, 0.06);
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
     
-    /* 텍스트 */
-    --text-dark: #0a0e27;
-    --text-light: #ffffff;
-    --text-muted: #8b95a5;
+    /* 입력 필드 */
+    --input-bg: #ffffff;
+    --input-border: #d1d5db;
+    --input-focus: #667eea;
+    --input-text: #0a0e27;
     
     /* 그림자 & 효과 */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
-    --shadow-neon: 0 0 20px rgba(102, 126, 234, 0.5);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+    --shadow-neon: 0 0 20px rgba(102, 126, 234, 0.3);
     
     /* 글래스모피즘 */
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-blur: blur(10px);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-blur: blur(12px);
 }
 
-/* 다크 모드 지원 */
+/* 다크 모드 오버라이드 - 최적화된 가독성 */
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg-primary: var(--dark-bg);
-        --bg-secondary: var(--dark-card);
-        --bg-hover: var(--dark-hover);
-        --border-color: var(--dark-border);
-        --text-primary: var(--text-light);
-        --text-secondary: var(--text-muted);
-    }
-}
-
-@media (prefers-color-scheme: light) {
-    :root {
-        --bg-primary: var(--light-bg);
-        --bg-secondary: var(--light-card);
-        --bg-hover: #f3f4f6;
-        --border-color: var(--light-border);
-        --text-primary: var(--text-dark);
-        --text-secondary: var(--text-muted);
+        /* 배경색 - 부드러운 다크 그라데이션 */
+        --bg-primary: #0f1419;
+        --bg-secondary: #1a1f2e;
+        --bg-tertiary: #252b3a;
+        --bg-hover: #2d3548;
+        --border-color: rgba(255, 255, 255, 0.12);
+        
+        /* 텍스트 색상 - 높은 대비 */
+        --text-primary: #f8f9fa;
+        --text-secondary: #c8ccd4;
+        --text-muted: #a0a8b5;
+        
+        /* 카드 & 컴포넌트 */
+        --card-bg: #1a1f2e;
+        --card-border: rgba(255, 255, 255, 0.1);
+        --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        --card-shadow-hover: 0 8px 32px rgba(102, 126, 234, 0.15);
+        
+        /* 입력 필드 */
+        --input-bg: #252b3a;
+        --input-border: rgba(255, 255, 255, 0.18);
+        --input-focus: #8b9aff;
+        --input-text: #f8f9fa;
+        
+        /* 글래스모피즘 */
+        --glass-bg: rgba(26, 31, 46, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.18);
     }
 }
 
@@ -124,7 +141,7 @@ body {
 
 /* ========== 헤더 - 미래지향적 디자인 ========== */
 .header {
-    background: var(--bg-secondary);
+    background: var(--card-bg);
     backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--border-color);
     padding: 1.25rem 2.5rem;
@@ -134,6 +151,7 @@ body {
     box-shadow: var(--shadow-md);
     position: relative;
     z-index: 1000;
+    gap: 2rem;
 }
 
 .header::before {
@@ -156,6 +174,42 @@ body {
     letter-spacing: -0.5px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.language-selector {
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.language-selector:hover {
+    border-color: var(--primary-solid);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.language-selector:focus {
+    border-color: var(--primary-solid);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+}
+
+.language-selector option {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
     gap: 0.5rem;
 }
 
@@ -1875,47 +1929,85 @@ body {
     }
 }
 
-/* 다크 모드 */
+/* 다크 모드 - 챗봇 & 결과 요소 최적화 */
 @media (prefers-color-scheme: dark) {
     .chatbot-container {
-        background: rgba(30, 30, 40, 0.98);
+        background: rgba(15, 20, 25, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.12);
     }
     
     .chatbot-messages {
-        background: linear-gradient(180deg, #1a1a24 0%, #20202a 100%);
+        background: linear-gradient(180deg, #1a1f2e 0%, #252b3a 100%);
     }
     
     .chatbot-message.bot .message-content {
-        background: rgba(50, 50, 60, 0.9);
-        color: #e0e0e0;
+        background: rgba(37, 43, 58, 0.95);
+        color: #f8f9fa;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .chatbot-typing {
+        background: rgba(37, 43, 58, 0.95);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     }
     
     .chatbot-input-area {
-        background: rgba(30, 30, 40, 0.95);
-        border-top-color: rgba(255, 255, 255, 0.1);
+        background: rgba(26, 31, 46, 0.98);
+        border-top-color: rgba(255, 255, 255, 0.12);
     }
     
     .chatbot-input {
-        background: rgba(50, 50, 60, 0.5);
-        border-color: rgba(255, 255, 255, 0.1);
-        color: #e0e0e0;
+        background: rgba(37, 43, 58, 0.8);
+        border-color: rgba(255, 255, 255, 0.18);
+        color: #f8f9fa;
+    }
+    
+    .chatbot-input::placeholder {
+        color: #a0a8b5;
+    }
+    
+    .quick-action-btn {
+        background: rgba(37, 43, 58, 0.9);
+        border-color: #8b9aff;
+        color: #8b9aff;
+    }
+    
+    .quick-action-btn:hover {
+        background: #8b9aff;
+        color: #0f1419;
     }
     
     .result-card {
-        background: rgba(50, 50, 60, 0.9);
+        background: rgba(37, 43, 58, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .result-card:hover {
+        background: rgba(45, 53, 72, 0.98);
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
     }
     
     .result-header h4 {
-        color: #e0e0e0;
+        color: #f8f9fa;
     }
     
     .result-info {
-        color: #b0b0b0;
+        color: #c8ccd4;
     }
     
     .result-header .rating,
     .result-header .available {
-        color: #667eea;
+        color: #8b9aff;
+        font-weight: 600;
+    }
+    
+    .result-actions button {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: #ffffff;
+    }
+    
+    .result-actions button:hover {
+        background: linear-gradient(135deg, #8b9aff, #8e5bb5);
     }
 }
 

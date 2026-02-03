@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 마이맵봇 (MyMapBot) - AI 기반 스마트 맵 플랫폼</title>
+    <title data-i18n="app.title">🤖 마이맵봇 (MyMapBot) - AI 기반 스마트 맵 플랫폼</title>
     
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,30 +27,38 @@
     <div class="app-container">
         <!-- 헤더 - 미래지향적 디자인 -->
         <header class="header">
-            <div class="logo">마이맵봇</div>
+            <div class="logo" data-i18n="app.name">마이맵봇</div>
             <nav class="nav-menu">
                 <button class="nav-btn active" data-tab="parking">
-                    <span>🅿️ 주차</span>
+                    <span data-i18n="nav.parking">🅿️ 주차</span>
                 </button>
                 <button class="nav-btn" data-tab="route">
-                    <span>🗺️ 경로</span>
+                    <span data-i18n="nav.route">🗺️ 경로</span>
                 </button>
                 <button class="nav-btn" data-tab="travel">
-                    <span>✈️ 여행</span>
+                    <span data-i18n="nav.travel">✈️ 여행</span>
                 </button>
                 <button class="nav-btn" data-tab="planner">
-                    <span>📅 플래너</span>
+                    <span data-i18n="nav.planner">📅 플래너</span>
                 </button>
                 <button class="nav-btn" data-tab="complaint">
-                    <span>📢 민원</span>
+                    <span data-i18n="nav.complaint">📢 민원</span>
                 </button>
                 <button class="nav-btn" data-tab="info">
-                    <span>ℹ️ 안내</span>
+                    <span data-i18n="nav.info">ℹ️ 안내</span>
                 </button>
                 <button class="nav-btn" data-tab="booking">
-                    <span>📋 예약</span>
+                    <span data-i18n="nav.booking">📋 예약</span>
                 </button>
             </nav>
+            <div class="header-actions">
+                <select id="app-language-select" class="language-selector">
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 中文</option>
+                </select>
+            </div>
         </header>
 
         <!-- 메인 컨테이너 -->
@@ -59,8 +67,8 @@
             <div class="map-section">
                 <div id="map"></div>
                 <div class="map-controls">
-                    <button class="control-btn" id="currentLocation">📍 현재 위치</button>
-                    <button class="control-btn" id="refreshData">🔄 새로고침</button>
+                    <button class="control-btn" id="currentLocation" data-i18n="map.currentLocation">📍 현재 위치</button>
+                    <button class="control-btn" id="refreshData" data-i18n="map.refresh">🔄 새로고침</button>
                 </div>
             </div>
 
@@ -68,15 +76,15 @@
             <div class="sidebar">
                 <!-- 주차 탭 -->
                 <div class="tab-content active" id="parking-tab">
-                    <h2>🅿️ 주차장 찾기</h2>
+                    <h2 data-i18n="parking.title">🅿️ 주차장 찾기</h2>
                     <div class="search-box">
-                        <input type="text" id="parkingSearch" placeholder="주차장 검색...">
+                        <input type="text" id="parkingSearch" data-i18n-placeholder="parking.searchPlaceholder" placeholder="주차장 검색...">
                         <button class="search-btn">🔍</button>
                     </div>
                     
                     <div class="filter-section">
                         <label>
-                            <input type="checkbox" id="filterAvailable"> 빈 자리만 보기
+                            <input type="checkbox" id="filterAvailable"> <span data-i18n="parking.filterAvailable">빈 자리만 보기</span>
                         </label>
                     </div>
 
@@ -87,46 +95,46 @@
 
                 <!-- 경로 탭 -->
                 <div class="tab-content" id="route-tab">
-                    <h2>🗺️ 경로 안내</h2>
+                    <h2 data-i18n="route.title">🗺️ 경로 안내</h2>
                     <div class="route-form">
                         <div class="form-group">
-                            <label>출발지</label>
-                            <input type="text" id="routeStart" placeholder="현재 위치">
+                            <label data-i18n="route.start">출발지</label>
+                            <input type="text" id="routeStart" data-i18n-placeholder="route.startPlaceholder" placeholder="현재 위치">
                         </div>
                         <div class="form-group">
-                            <label>도착지</label>
-                            <input type="text" id="routeEnd" placeholder="도착지 입력">
+                            <label data-i18n="route.destination">도착지</label>
+                            <input type="text" id="routeEnd" data-i18n-placeholder="route.destinationPlaceholder" placeholder="도착지 입력">
                         </div>
                         <div class="form-group">
-                            <label>교통수단</label>
+                            <label data-i18n="route.transport">교통수단</label>
                             <select id="transportMode">
-                                <option value="car">자동차</option>
-                                <option value="walk">도보</option>
-                                <option value="bike">자전거</option>
+                                <option value="car" data-i18n="route.car">자동차</option>
+                                <option value="walk" data-i18n="route.walk">도보</option>
+                                <option value="bike" data-i18n="route.bike">자전거</option>
                             </select>
                         </div>
-                        <button class="primary-btn" id="findRoute">경로 찾기</button>
+                        <button class="primary-btn" id="findRoute" data-i18n="route.find">경로 찾기</button>
                     </div>
                     <div class="route-result" id="routeResult"></div>
                 </div>
 
                 <!-- 여행 목적별 추천 탭 -->
                 <div class="tab-content" id="travel-tab">
-                    <h2>✈️ 목적별 여행 추천</h2>
+                    <h2 data-i18n="travel.title">✈️ 목적별 여행 추천</h2>
                     
                     <!-- 목적 선택 -->
                     <div class="purpose-section">
-                        <label>이동 목적을 선택하세요</label>
+                        <label data-i18n="travel.selectPurpose">이동 목적을 선택하세요</label>
                         <div class="purpose-buttons">
-                            <button class="purpose-btn" data-purpose="business">💼 출장</button>
-                            <button class="purpose-btn" data-purpose="travel">🏖️ 여행</button>
-                            <button class="purpose-btn" data-purpose="dining">🍽️ 식사</button>
+                            <button class="purpose-btn" data-purpose="business" data-i18n="travel.business">💼 출장</button>
+                            <button class="purpose-btn" data-purpose="travel" data-i18n="travel.travel">🏖️ 여행</button>
+                            <button class="purpose-btn" data-purpose="dining" data-i18n="travel.dining">🍽️ 식사</button>
                         </div>
                     </div>
 
                     <!-- 추천 결과 -->
                     <div class="recommendations-container" id="recommendationList">
-                        <p style="padding: 1rem; text-align: center; color: #6b7280;">
+                        <p style="padding: 1rem; text-align: center; color: var(--text-secondary);" data-i18n="travel.selectPrompt">
                             위에서 목적을 선택하면 맞춤 추천을 확인할 수 있습니다.
                         </p>
                     </div>
@@ -134,18 +142,18 @@
 
                 <!-- 여행 플래너 탭 -->
                 <div class="tab-content" id="planner-tab">
-                    <h2>📅 여행 플래너</h2>
+                    <h2 data-i18n="planner.title">📅 여행 플래너</h2>
                     
                     <!-- 계획 목록/생성 토글 -->
                     <div class="planner-mode-toggle">
-                        <button class="toggle-btn active" data-mode="list">내 여행 계획</button>
-                        <button class="toggle-btn" data-mode="create">새 계획 만들기</button>
+                        <button class="toggle-btn active" data-mode="list" data-i18n="planner.myPlans">내 여행 계획</button>
+                        <button class="toggle-btn" data-mode="create" data-i18n="planner.createNew">새 계획 만들기</button>
                     </div>
 
                     <!-- 계획 목록 뷰 -->
                     <div class="planner-view active" id="planner-list-view">
                         <div class="plan-list" id="planList">
-                            <p style="padding: 1rem; text-align: center; color: #6b7280;">
+                            <p style="padding: 1rem; text-align: center; color: var(--text-secondary);" data-i18n="planner.noPlanMsg">
                                 아직 여행 계획이 없습니다.<br>
                                 '새 계획 만들기'를 클릭해보세요!
                             </p>
@@ -307,15 +315,15 @@
 
                 <!-- 민원 탭 -->
                 <div class="tab-content" id="complaint-tab">
-                    <h2>📝 민원 신고</h2>
+                    <h2 data-i18n="complaint.title">📝 민원 신고</h2>
                     <div class="complaint-form">
                         <div class="form-group">
-                            <label>민원 유형</label>
+                            <label data-i18n="complaint.type">민원 유형</label>
                             <select id="complaintType">
-                                <option value="parking">불법 주차</option>
-                                <option value="road">도로 파손</option>
-                                <option value="traffic">교통 신호</option>
-                                <option value="other">기타</option>
+                                <option value="parking" data-i18n="complaint.illegalParking">불법 주차</option>
+                                <option value="road" data-i18n="complaint.roadDamage">도로 파손</option>
+                                <option value="traffic" data-i18n="complaint.trafficSignal">교통 신호</option>
+                                <option value="other" data-i18n="complaint.other">기타</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -341,13 +349,13 @@
 
                 <!-- 안내 탭 -->
                 <div class="tab-content" id="info-tab">
-                    <h2>ℹ️ 주변 안내</h2>
+                    <h2 data-i18n="info.title">ℹ️ 주변 안내</h2>
                     <div class="info-categories">
-                        <button class="category-btn" data-category="gas">⛽ 주유소</button>
-                        <button class="category-btn" data-category="hospital">🏥 병원</button>
-                        <button class="category-btn" data-category="restaurant">🍴 음식점</button>
-                        <button class="category-btn" data-category="cafe">☕ 카페</button>
-                        <button class="category-btn" data-category="store">🏪 편의점</button>
+                        <button class="category-btn" data-category="gas" data-i18n="info.gasStation">⛽ 주유소</button>
+                        <button class="category-btn" data-category="hospital" data-i18n="info.hospital">🏥 병원</button>
+                        <button class="category-btn" data-category="restaurant" data-i18n="info.restaurant">🍴 음식점</button>
+                        <button class="category-btn" data-category="cafe" data-i18n="info.cafe">☕ 카페</button>
+                        <button class="category-btn" data-category="store" data-i18n="info.store">🏪 편의점</button>
                     </div>
                     <div class="info-list" id="infoList">
                         <!-- 동적으로 생성됨 -->
@@ -356,14 +364,14 @@
 
                 <!-- 예약 탭 -->
                 <div class="tab-content" id="booking-tab">
-                    <h2>📅 예약 관리</h2>
+                    <h2 data-i18n="booking.title">📅 예약 관리</h2>
                     <div class="booking-form">
                         <div class="form-group">
-                            <label>예약 유형</label>
+                            <label data-i18n="booking.type">예약 유형</label>
                             <select id="bookingType">
-                                <option value="parking">주차장 예약</option>
-                                <option value="charging">전기차 충전</option>
-                                <option value="carwash">세차</option>
+                                <option value="parking" data-i18n="booking.parkingReservation">주차장 예약</option>
+                                <option value="charging" data-i18n="booking.evCharging">전기차 충전</option>
+                                <option value="carwash" data-i18n="booking.carWash">세차</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -404,25 +412,25 @@
         <div class="stats-panel">
             <div class="stat-card">
                 <div class="stat-value" id="totalParking">128</div>
-                <div class="stat-label">전체 주차장</div>
+                <div class="stat-label" data-i18n="stats.totalParking">전체 주차장</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="availableSpots">342</div>
-                <div class="stat-label">이용 가능</div>
+                <div class="stat-label" data-i18n="stats.available">이용 가능</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="activeComplaints">7</div>
-                <div class="stat-label">처리 중 민원</div>
+                <div class="stat-label" data-i18n="stats.activeComplaints">처리 중 민원</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value" id="todayBookings">23</div>
-                <div class="stat-label">오늘 예약</div>
+                <div class="stat-label" data-i18n="stats.todayBookings">오늘 예약</div>
             </div>
         </div>
     </div>
 
     <!-- 챗봇 플로팅 버튼 -->
-    <button id="chatbot-toggle" class="chatbot-toggle" title="마이맵봇 챗봇">
+    <button id="chatbot-toggle" class="chatbot-toggle" data-i18n-title="chatbot.toggleTitle" title="마이맵봇 챗봇">
         🤖
     </button>
 
@@ -431,7 +439,7 @@
         <div class="chatbot-header">
             <div class="chatbot-title">
                 <span class="chatbot-icon">🤖</span>
-                <span>마이맵봇</span>
+                <span data-i18n="app.name">마이맵봇</span>
             </div>
             <div class="chatbot-language">
                 <select id="chatbot-language-select" class="language-select">
@@ -457,6 +465,7 @@
                 type="text" 
                 id="chatbot-input" 
                 class="chatbot-input" 
+                data-i18n-placeholder="chatbot.inputPlaceholder"
                 placeholder="메시지를 입력하거나 음성으로 말씀하세요..."
             />
             <button id="chatbot-voice" class="chatbot-voice-btn" title="음성 입력">

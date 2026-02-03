@@ -787,3 +787,53 @@ function viewOnMap(lat, lng, name) {
         map.removeLayer(tempMarker);
     }, 5000);
 }
+
+// ========== 다국어 지원 ==========
+function initI18n() {
+    // 언어 선택 드롭다운 이벤트 리스너
+    const appLangSelect = document.getElementById('app-language-select');
+    const chatbotLangSelect = document.getElementById('chatbot-language-select');
+    
+    if (appLangSelect) {
+        appLangSelect.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            if (typeof setLanguage === 'function') {
+                setLanguage(lang);
+                // 챗봇 언어도 동기화
+                if (chatbotLangSelect) {
+                    chatbotLangSelect.value = lang;
+                }
+            }
+        });
+    }
+    
+    if (chatbotLangSelect) {
+        chatbotLangSelect.addEventListener('change', (e) => {
+            const lang = e.target.value;
+            if (typeof setLanguage === 'function') {
+                setLanguage(lang);
+                // 앱 언어도 동기화
+                if (appLangSelect) {
+                    appLangSelect.value = lang;
+                }
+            }
+        });
+    }
+    
+    // 페이지 로드 시 저장된 언어 설정
+    if (typeof initLanguage === 'function') {
+        initLanguage();
+        
+        // 드롭다운 값 동기화
+        const currentLang = localStorage.getItem('myMapBot_language') || 'ko';
+        if (appLangSelect) appLangSelect.value = currentLang;
+        if (chatbotLangSelect) chatbotLangSelect.value = currentLang;
+    }
+}
+
+// DOM이 준비되면 다국어 초기화
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initI18n);
+} else {
+    initI18n();
+}
