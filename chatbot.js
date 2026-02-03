@@ -245,165 +245,6 @@ async function reserveParking(parkingId) {
 }
 
 // 사용자 메시지 추가
-    try {
-        const response = await fetch('/api/parking');
-        const data = await response.json();
-        
-        if (data.success && data.data.length > 0) {
-            const parkingLots = data.data.slice(0, 3);
-            let message = `근처 주차장 정보입니다! 🅿️\n\n`;
-            
-            parkingLots.forEach((p, index) => {
-                message += `${index + 1}. ${p.name}\n`;
-                message += `   빈 자리: ${p.availableSpots}/${p.totalSpots}\n`;
-                message += `   요금: ${p.fee}원/시간\n\n`;
-            });
-            
-            return {
-                message: message,
-                actions: {
-                    type: 'show_parking',
-                    data: parkingLots
-                }
-            };
-        } else {
-            return {
-                message: '주차장 정보를 찾지 못했습니다.'
-            };
-        }
-    } catch (error) {
-        console.error('Parking search error:', error);
-        return {
-            message: '주차장 검색 중 오류가 발생했습니다.'
-        };
-    }
-}
-
-// 드라이브스루 핸들러
-async function handleDriveThru(intent) {
-    return {
-        message: `드라이브스루 매장을 찾아드릴게요! 🚗\n\n` +
-                `어떤 종류의 드라이브스루를 찾으시나요?\n` +
-                `- 패스트푸드 (맥도날드, 버거킹 등)\n` +
-                `- 커피 (스타벅스, 이디야 등)\n` +
-                `- 기타`,
-        actions: {
-            type: 'show_drive_thru_options'
-        }
-    };
-}
-
-// 메뉴 주문 핸들러
-async function handleMenuOrder(intent) {
-    return {
-        message: `메뉴를 주문하시겠어요? 📋\n\n` +
-                `미리 주문하시면 도착 시 바로 받으실 수 있습니다!\n\n` +
-                `어떤 식당의 메뉴를 주문하시겠어요?`,
-        actions: {
-            type: 'show_menu_order'
-        }
-    };
-}
-
-// 예약 핸들러
-async function handleReservation(intent) {
-    return {
-        message: `식당 예약을 도와드리겠습니다! 📅\n\n` +
-                `예약하실 식당 이름을 말씀해주시거나,\n` +
-                `근처 식당 목록을 보여드릴까요?`,
-        actions: {
-            type: 'show_reservation_options'
-        }
-    };
-}
-
-// 액션 실행
-function executeActions(actions) {
-    switch (actions.type) {
-        case 'show_restaurants':
-            showRestaurantsOnMap(actions.data);
-            break;
-        case 'show_parking':
-            showParkingOnMap(actions.data);
-            break;
-        case 'show_drive_thru_options':
-            addQuickActions([
-                { text: '🍔 패스트푸드', action: 'drive_thru_fastfood' },
-                { text: '☕ 커피', action: 'drive_thru_coffee' },
-                { text: '🏪 기타', action: 'drive_thru_other' }
-            ]);
-            break;
-        case 'show_menu_order':
-            // 메뉴 주문 UI 표시
-            break;
-        case 'show_reservation_options':
-            addQuickActions([
-                { text: '🔍 근처 식당 보기', action: 'find_restaurant' },
-                { text: '📝 식당 이름 입력', action: 'input_restaurant_name' }
-            ]);
-            break;
-    }
-}
-
-// 지도에 식당 표시
-function showRestaurantsOnMap(restaurants) {
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    restaurants.forEach(restaurant => {
-        const marker = L.marker([restaurant.lat, restaurant.lng], {
-            icon: L.divIcon({
-                className: 'custom-marker',
-                html: '🍽️',
-                iconSize: [40, 40]
-            })
-        }).addTo(map);
-        
-        marker.bindPopup(`
-            <div class="popup-content">
-                <h3>${restaurant.name}</h3>
-                <p>📍 ${restaurant.distance}km</p>
-                ${restaurant.rating ? `<p>⭐ ${restaurant.rating}</p>` : ''}
-                <button onclick="reserveRestaurant('${restaurant.name}')">예약하기</button>
-            </div>
-        `);
-        
-        markers.push(marker);
-    });
-    
-    // 지도 중심 이동
-    if (restaurants.length > 0) {
-        map.setView([restaurants[0].lat, restaurants[0].lng], 14);
-    }
-}
-
-// 지도에 주차장 표시
-function showParkingOnMap(parkingLots) {
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    parkingLots.forEach(parking => {
-        const marker = L.marker([parking.lat, parking.lng], {
-            icon: L.divIcon({
-                className: 'custom-marker',
-                html: '🅿️',
-                iconSize: [40, 40]
-            })
-        }).addTo(map);
-        
-        marker.bindPopup(`
-            <div class="popup-content">
-                <h3>${parking.name}</h3>
-                <p>빈 자리: ${parking.availableSpots}/${parking.totalSpots}</p>
-                <p>요금: ${parking.fee}원/시간</p>
-            </div>
-        `);
-        
-        markers.push(marker);
-    });
-}
-
-// 사용자 메시지 추가
 function addUserMessage(message) {
     chatbotState.messages.push({
         type: 'user',
@@ -519,34 +360,20 @@ function initVoiceRecognition() {
     recognition.continuous = false;
     recognition.interimResults = false;
     
-    recognition.onstart = () => {
-        chatbotState.isListening = true;
-        const voiceBtn = document.getElementById('chatbot-voice');
-        if (voiceBtn) {
-            voiceBtn.classList.add('listening');
-            voiceBtn.innerHTML = '🎤';
-        }
-        addBotMessage('듣고 있습니다... 🎤');
-    };
-    
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        document.getElementById('chatbot-input').value = transcript;
-        sendMessage();
+        sendMessage(transcript);
     };
     
     recognition.onerror = (event) => {
-        console.error('음성 인식 오류:', event.error);
-        addBotMessage('음성 인식에 실패했습니다. 다시 시도해주세요.');
+        console.error('Speech recognition error:', event.error);
+        chatbotState.isListening = false;
+        updateVoiceButton();
     };
     
     recognition.onend = () => {
         chatbotState.isListening = false;
-        const voiceBtn = document.getElementById('chatbot-voice');
-        if (voiceBtn) {
-            voiceBtn.classList.remove('listening');
-            voiceBtn.innerHTML = '🎙️';
-        }
+        updateVoiceButton();
     };
     
     chatbotState.voiceRecognition = recognition;
@@ -555,7 +382,7 @@ function initVoiceRecognition() {
 // 음성 인식 토글
 function toggleVoiceRecognition() {
     if (!chatbotState.voiceRecognition) {
-        addBotMessage('음성 인식을 지원하지 않는 브라우저입니다.');
+        addBotMessage('죄송합니다. 음성 인식을 지원하지 않는 브라우저입니다.');
         return;
     }
     
@@ -563,17 +390,23 @@ function toggleVoiceRecognition() {
         chatbotState.voiceRecognition.stop();
     } else {
         chatbotState.voiceRecognition.start();
+        chatbotState.isListening = true;
+        updateVoiceButton();
+        addBotMessage('🎙️ 말씀하세요...');
     }
 }
 
-// 식당 예약
-function reserveRestaurant(restaurantName) {
-    addUserMessage(`${restaurantName} 예약하기`);
-    addBotMessage(`${restaurantName} 예약을 도와드리겠습니다!\n\n몇 명이서 방문하시나요?`);
+// 음성 버튼 업데이트
+function updateVoiceButton() {
+    const voiceBtn = document.getElementById('chatbot-voice');
+    if (voiceBtn) {
+        if (chatbotState.isListening) {
+            voiceBtn.classList.add('listening');
+        } else {
+            voiceBtn.classList.remove('listening');
+        }
+    }
 }
-
-// 전역 함수로 노출
-window.reserveRestaurant = reserveRestaurant;
 
 // DOMContentLoaded에서 초기화
 document.addEventListener('DOMContentLoaded', () => {
