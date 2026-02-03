@@ -595,6 +595,9 @@ async function selectPurpose(purpose) {
     }
 }
 
+// selectPurpose를 전역으로 노출
+window.selectPurpose = selectPurpose;
+
 // 추천 정보 렌더링
 function renderRecommendations(purpose) {
     const container = document.getElementById('recommendationList');
