@@ -103,7 +103,29 @@ app.get('/api/parking', (req, res) => {
     });
 });
 
-// 특정 주차장 조회
+// 주차장 검색 (반드시 :id 앞에 위치해야 함)
+app.get('/api/parking/search', (req, res) => {
+    const { query } = req.query;
+    
+    if (!query) {
+        return res.json({
+            success: true,
+            data: parkingLots
+        });
+    }
+    
+    const results = parkingLots.filter(lot => 
+        lot.name.toLowerCase().includes(query.toLowerCase())
+    );
+    
+    res.json({
+        success: true,
+        data: results,
+        count: results.length
+    });
+});
+
+// 특정 주차장 조회 (이 라우트는 search 뒤에 위치해야 함)
 app.get('/api/parking/:id', (req, res) => {
     const lot = parkingLots.find(p => p.id === parseInt(req.params.id));
     if (lot) {
@@ -153,7 +175,7 @@ app.post('/api/complaints', (req, res) => {
     
     complaints.push(complaint);
     
-    res.json({
+    res.status(201).json({
         success: true,
         message: '민원이 접수되었습니다.',
         data: complaint
@@ -297,7 +319,7 @@ app.post('/api/bookings', (req, res) => {
     
     bookings.push(booking);
     
-    res.json({
+    res.status(201).json({
         success: true,
         message: '예약이 완료되었습니다.',
         data: booking
@@ -520,7 +542,7 @@ app.post('/api/travel-plans', (req, res) => {
     
     travelPlans.push(plan);
     
-    res.json({
+    res.status(201).json({
         success: true,
         message: '여행 계획이 생성되었습니다.',
         data: plan
@@ -656,7 +678,7 @@ app.post('/api/itineraries', (req, res) => {
     
     itineraries.push(itinerary);
     
-    res.json({
+    res.status(201).json({
         success: true,
         message: '일정이 추가되었습니다.',
         data: itinerary
