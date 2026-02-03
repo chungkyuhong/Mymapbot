@@ -6,9 +6,9 @@ const translations = {
         navParking: '주차',
         navRoute: '경로',
         navTravel: '여행',
-        navPlanner: '플래너',
-        navComplaint: '민원',
-        navInfo: '안내',
+        navPlanner: '일정',
+        navComplaint: '신고',
+        navInfo: '주변',
         navBooking: '예약',
         
         // 챗봇
@@ -77,9 +77,9 @@ const translations = {
         edit: '수정',
         delete: '삭제',
         
-        // 민원 탭
-        complaintTitle: '민원 신고',
-        complaintType: '민원 유형',
+        // 신고 탭
+        complaintTitle: '문제 신고',
+        complaintType: '신고 유형',
         parkingIssue: '주차 문제',
         roadIssue: '도로 문제',
         facilityIssue: '시설 문제',
@@ -87,13 +87,13 @@ const translations = {
         location: '위치',
         description: '상세 설명',
         submit: '제출',
-        complaintHistory: '민원 내역',
+        complaintHistory: '신고 내역',
         status: '상태',
         processing: '처리중',
         completed: '완료',
         
-        // 안내 탭
-        infoTitle: '주변 안내',
+        // 주변 탭
+        infoTitle: '주변 정보',
         nearbyCategory: '카테고리',
         cafe: '카페',
         restaurant: '음식점',
@@ -136,7 +136,7 @@ const translations = {
         
         // 통계
         availableSpotsStat: '이용 가능',
-        activeComplaintsStat: '처리 중 민원',
+        activeComplaintsStat: '처리 중 신고',
         todayBookingsStat: '오늘 예약'
     },
     en: {
@@ -146,7 +146,7 @@ const translations = {
         navTravel: 'Travel',
         navPlanner: 'Planner',
         navComplaint: 'Report',
-        navInfo: 'Info',
+        navInfo: 'Nearby',
         navBooking: 'Booking',
         
         chatbotTitle: 'MyMapBot',
@@ -272,7 +272,7 @@ const translations = {
         navTravel: '旅行',
         navPlanner: 'プランナー',
         navComplaint: '報告',
-        navInfo: '案内',
+        navInfo: '周辺',
         navBooking: '予約',
         
         chatbotTitle: 'マイマップボット',
@@ -396,9 +396,9 @@ const translations = {
         navParking: '停车',
         navRoute: '路线',
         navTravel: '旅行',
-        navPlanner: '规划',
+        navPlanner: '日程',
         navComplaint: '报告',
-        navInfo: '信息',
+        navInfo: '附近',
         navBooking: '预订',
         
         chatbotTitle: '我的地图机器人',
