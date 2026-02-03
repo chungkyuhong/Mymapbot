@@ -2,18 +2,47 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import { searchPOI, searchByCategory, addressToCoord, CATEGORY_CODES } from './poiService.js';
+
+// 새로운 라우터 import
+import authRoutes from './authRoutes.js';
+import paymentRoutes from './paymentRoutes.js';
+import { 
+    corsOptions, 
+    errorHandler, 
+    notFoundHandler, 
+    requestLogger, 
+    apiRateLimiter 
+} from './middleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// 미들웨어
-app.use(cors());
-app.use(express.json());
+// ========== 보안 미들웨어 ==========
+app.use(helmet({
+    contentSecurityPolicy: false, // 개발 중에는 비활성화
+    crossOriginEmbedderPolicy: false
+}));
+
+// ========== 로깅 미들웨어 ==========
+if (process.env.NODE_ENV !== 'production') {
+    app.use(morgan('dev'));
+}
+app.use(requestLogger);
+
+// ========== 기본 미들웨어 ==========
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '..')));
+
+// ========== Rate Limiting ==========
+app.use('/api', apiRateLimiter);
 
 // 샘플 데이터
 let parkingLots = [
@@ -89,7 +118,30 @@ const recommendations = {
     }
 };
 
-// API 엔드포인트
+// ========== API 라우터 등록 ==========
+
+// 인증 관련 API
+app.use('/api/auth', authRoutes);
+
+// 결제 관련 API
+app.use('/api/payments', paymentRoutes);
+
+// 헬스 체크
+app.get('/api/health', (req, res) => {
+    res.json({
+        success: true,
+        message: '서버가 정상적으로 실행 중입니다.',
+        timestamp: new Date().toISOString(),
+        version: '2.1.0',
+        features: {
+            authentication: true,
+            payment: true,
+            booking: true,
+            poi: true,
+            multilingual: true
+        }
+    });
+});
 
 // 주차장 검색 (특정 경로이므로 먼저 정의)
 app.get('/api/parking/search', (req, res) => {
@@ -1375,28 +1427,23 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
-// 404 에러 핸들링
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: '요청한 리소스를 찾을 수 없습니다.'
-    });
-});
-
-// 에러 핸들링
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: '서버 오류가 발생했습니다.',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
-    });
-});
+// ========== 에러 핸들링 ==========
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // 서버 시작
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🤖 마이맵봇 (MyMapBot) 서버가 포트 ${PORT}에서 실행 중입니다.`);
-    console.log(`📍 http://localhost:${PORT}`);
+    console.log(`\n${'='.repeat(60)}`);
+    console.log(`🤖 마이맵봇 (MyMapBot) 서버 v2.1.0`);
+    console.log(`${'='.repeat(60)}`);
+    console.log(`📍 서버 주소: http://localhost:${PORT}`);
+    console.log(`🌐 환경: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`✅ 기능: 인증, 결제, 예약, POI, 다국어`);
+    console.log(`${'-'.repeat(60)}`);
+    console.log(`🔐 인증 API: http://localhost:${PORT}/api/auth`);
+    console.log(`💳 결제 API: http://localhost:${PORT}/api/payments`);
+    console.log(`🏥 헬스체크: http://localhost:${PORT}/api/health`);
+    console.log(`${'='.repeat(60)}\n`);
 });
 
 export default app;
