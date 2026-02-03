@@ -1,7 +1,7 @@
 {
-  "name": "mobility-map-saas",
-  "version": "1.0.0",
-  "description": "모빌리티/지도 특화 미니 SaaS - 주차·경로·민원·안내·예약 통합 플랫폼",
+  "name": "mymapbot",
+  "version": "2.0.0",
+  "description": "마이맵봇 (MyMapBot) - AI 기반 스마트 맵 플랫폼. 주차·경로·민원·안내·예약·여행 통합 솔루션",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,5 +18,17 @@
   },
   "devDependencies": {
     "vite": "^5.0.0"
-  }
+  },
+  "keywords": [
+    "mymapbot",
+    "AI",
+    "map",
+    "mobility",
+    "travel",
+    "parking",
+    "navigation",
+    "POI"
+  ],
+  "author": "MyMapBot Team",
+  "license": "MIT"
 }

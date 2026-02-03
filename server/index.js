@@ -1095,7 +1095,7 @@ app.use((err, req, res, next) => {
 
 // 서버 시작
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 모빌리티 플랫폼 서버가 포트 ${PORT}에서 실행 중입니다.`);
+    console.log(`🤖 마이맵봇 (MyMapBot) 서버가 포트 ${PORT}에서 실행 중입니다.`);
     console.log(`📍 http://localhost:${PORT}`);
 });
 
