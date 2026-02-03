@@ -53,16 +53,36 @@ function initChatbot() {
         });
     }
     
+    // 언어 선택
+    const languageSelect = document.getElementById('chatbot-language-select');
+    if (languageSelect) {
+        languageSelect.value = currentLanguage;
+        languageSelect.addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+            // 웰컴 메시지 재설정
+            chatbotState.messages = [];
+            addBotMessage(t('welcomeMessage1'));
+            addBotMessage(t('welcomeMessage2'));
+            // 퀵 액션 재설정
+            addQuickActions([
+                { text: t('findRestaurant'), action: 'find_restaurant' },
+                { text: t('findParking'), action: 'find_parking' },
+                { text: t('driveThru'), action: 'drive_thru' },
+                { text: t('orderMenu'), action: 'order_menu' }
+            ]);
+        });
+    }
+    
     // 웰컴 메시지
-    addBotMessage('안녕하세요! 🤖 마이맵봇입니다. 무엇을 도와드릴까요?');
-    addBotMessage('음성으로 말씀하시거나 아래 버튼을 선택해주세요!');
+    addBotMessage(t('welcomeMessage1'));
+    addBotMessage(t('welcomeMessage2'));
     
     // 퀵 액션 버튼
     addQuickActions([
-        { text: '🍽️ 식당 찾기', action: 'find_restaurant' },
-        { text: '🅿️ 주차장 찾기', action: 'find_parking' },
-        { text: '🚗 드라이브스루', action: 'drive_thru' },
-        { text: '📋 메뉴 주문', action: 'order_menu' }
+        { text: t('findRestaurant'), action: 'find_restaurant' },
+        { text: t('findParking'), action: 'find_parking' },
+        { text: t('driveThru'), action: 'drive_thru' },
+        { text: t('orderMenu'), action: 'order_menu' }
     ]);
     
     // 음성 인식 초기화
@@ -130,11 +150,11 @@ async function sendMessage(text = null) {
                 })));
             }
         } else {
-            addBotMessage('죄송합니다. 요청을 처리할 수 없습니다.');
+            addBotMessage(t('requestError'));
         }
     } catch (error) {
         hideTyping();
-        addBotMessage('죄송합니다. 오류가 발생했습니다. 다시 시도해주세요.');
+        addBotMessage(t('generalError'));
         console.error('Chatbot error:', error);
     }
 }
@@ -156,12 +176,12 @@ function displayResults(data, intent) {
                     <span class="rating">⭐ ${restaurant.rating}</span>
                 </div>
                 <p class="result-info">${restaurant.address}</p>
-                <p class="result-info">📞 ${restaurant.phone || '정보 없음'}</p>
-                <p class="result-info">🅿️ ${restaurant.parking ? '주차 가능' : '주차 불가'}</p>
+                <p class="result-info">📞 ${restaurant.phone || t('noPhone')}</p>
+                <p class="result-info">🅿️ ${restaurant.parking ? t('parkingAvailable') : t('parkingUnavailable')}</p>
                 <p class="result-info">📍 ${restaurant.distance}m</p>
                 <div class="result-actions">
-                    <button onclick="viewOnMap(${restaurant.lat}, ${restaurant.lng}, '${restaurant.name}')">지도에서 보기</button>
-                    <button onclick="makeReservation('${restaurant.id}', '${restaurant.name}')">예약하기</button>
+                    <button onclick="viewOnMap(${restaurant.lat}, ${restaurant.lng}, '${restaurant.name}')">${t('viewOnMap')}</button>
+                    <button onclick="makeReservation('${restaurant.id}', '${restaurant.name}')">${t('makeReservation')}</button>
                 </div>
             `;
             resultDiv.appendChild(card);
@@ -180,8 +200,8 @@ function displayResults(data, intent) {
                 <p class="result-info">💰 ${parking.fee}</p>
                 <p class="result-info">📍 ${parking.distance}km</p>
                 <div class="result-actions">
-                    <button onclick="viewOnMap(${parking.lat}, ${parking.lng}, '${parking.name}')">지도에서 보기</button>
-                    <button onclick="reserveParking(${parking.id})">주차 예약</button>
+                    <button onclick="viewOnMap(${parking.lat}, ${parking.lng}, '${parking.name}')">${t('viewOnMap')}</button>
+                    <button onclick="reserveParking(${parking.id})">${t('reserveParking')}</button>
                 </div>
             `;
             resultDiv.appendChild(card);
@@ -205,8 +225,8 @@ function viewOnMap(lat, lng, name) {
 
 // 예약하기
 async function makeReservation(restaurantId, restaurantName) {
-    addBotMessage(`${restaurantName} 예약을 진행합니다. 날짜와 시간, 인원을 알려주세요.`);
-    addBotMessage('예: "내일 저녁 6시 4명"');
+    addBotMessage(`${restaurantName} ${t('reservationPrompt')}`);
+    addBotMessage(t('reservationExample'));
     
     // 예약 컨텍스트 저장
     chatbotState.reservationContext = {
@@ -234,13 +254,13 @@ async function reserveParking(parkingId) {
         
         const result = await response.json();
         if (result.success) {
-            addBotMessage('주차 예약이 완료되었습니다! 🎉');
+            addBotMessage(t('reservationSuccess'));
         } else {
-            addBotMessage('예약에 실패했습니다. 다시 시도해주세요.');
+            addBotMessage(t('reservationFailed'));
         }
     } catch (error) {
         console.error('Parking reservation error:', error);
-        addBotMessage('예약 중 오류가 발생했습니다.');
+        addBotMessage(t('reservationError'));
     }
 }
 
@@ -382,7 +402,7 @@ function initVoiceRecognition() {
 // 음성 인식 토글
 function toggleVoiceRecognition() {
     if (!chatbotState.voiceRecognition) {
-        addBotMessage('죄송합니다. 음성 인식을 지원하지 않는 브라우저입니다.');
+        addBotMessage(t('noSpeechRecognition'));
         return;
     }
     
@@ -392,7 +412,7 @@ function toggleVoiceRecognition() {
         chatbotState.voiceRecognition.start();
         chatbotState.isListening = true;
         updateVoiceButton();
-        addBotMessage('🎙️ 말씀하세요...');
+        addBotMessage(t('listening'));
     }
 }
 

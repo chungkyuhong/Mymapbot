@@ -1555,6 +1555,30 @@ body {
     font-weight: 700;
 }
 
+.chatbot-language {
+    margin-left: auto;
+}
+
+.language-select {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.language-select:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.language-select option {
+    background: var(--primary);
+    color: white;
+}
+
 .chatbot-icon {
     font-size: 1.5rem;
     animation: pulse 2s infinite;
@@ -1883,6 +1907,15 @@ body {
     
     .result-header h4 {
         color: #e0e0e0;
+    }
+    
+    .result-info {
+        color: #b0b0b0;
+    }
+    
+    .result-header .rating,
+    .result-header .available {
+        color: #667eea;
     }
 }
 

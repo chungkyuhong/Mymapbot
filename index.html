@@ -433,6 +433,14 @@
                 <span class="chatbot-icon">🤖</span>
                 <span>마이맵봇</span>
             </div>
+            <div class="chatbot-language">
+                <select id="chatbot-language-select" class="language-select">
+                    <option value="ko">🇰🇷 한국어</option>
+                    <option value="en">🇺🇸 English</option>
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="zh">🇨🇳 中文</option>
+                </select>
+            </div>
             <button id="chatbot-close" class="chatbot-close">✕</button>
         </div>
         
@@ -461,6 +469,7 @@
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/i18n.js"></script>
     <script type="module" src="/main.js"></script>
     <script type="module" src="/planner.js"></script>
     <script src="/chatbot.js"></script>

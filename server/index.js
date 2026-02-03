@@ -1227,20 +1227,24 @@ async function searchRestaurants(keywords, location) {
         const lng = location?.lng || 126.9780;
         
         // POI 서비스의 카테고리 검색 사용
-        const results = await searchPOI('FD6', lat, lng, 10); // FD6 = 음식점
+        const results = await searchByCategory('FD6', lng, lat, 2000); // FD6 = 음식점, 2km 반경
         
-        return results.slice(0, 5).map(place => ({
-            id: place.id,
-            name: place.place_name,
-            category: place.category_name,
-            address: place.address_name,
-            distance: place.distance,
-            phone: place.phone,
+        if (!results || results.length === 0) {
+            return [];
+        }
+        
+        return results.slice(0, 5).map((place, index) => ({
+            id: place.id || `restaurant_${index}`,
+            name: place.place_name || place.name || '음식점',
+            category: place.category_name || '음식점',
+            address: place.address_name || place.address || '주소 정보 없음',
+            distance: place.distance || 0,
+            phone: place.phone || '전화번호 없음',
             parking: Math.random() > 0.5, // 실제로는 DB에서
             drivethru: Math.random() > 0.7,
             rating: (Math.random() * 1.5 + 3.5).toFixed(1),
-            lat: parseFloat(place.y),
-            lng: parseFloat(place.x)
+            lat: parseFloat(place.y) || lat,
+            lng: parseFloat(place.x) || lng
         }));
     } catch (error) {
         console.error('Restaurant search error:', error);
