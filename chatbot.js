@@ -7,6 +7,9 @@ const chatbotState = {
     isListening: false
 };
 
+// API 기본 URL
+const API_BASE_URL = window.location.origin.replace('5173', '3000');
+
 // 챗봇 초기화
 function initChatbot() {
     const chatbotToggle = document.getElementById('chatbot-toggle');
@@ -79,15 +82,15 @@ function toggleChatbot() {
 }
 
 // 메시지 전송
-async function sendMessage() {
+async function sendMessage(text = null) {
     const input = document.getElementById('chatbot-input');
-    const message = input.value.trim();
+    const message = text || input.value.trim();
     
     if (!message) return;
     
     // 사용자 메시지 추가
     addUserMessage(message);
-    input.value = '';
+    if (!text) input.value = ''; // 입력창에서 온 경우만 초기화
     
     // 타이핑 표시
     showTyping();
@@ -96,7 +99,7 @@ async function sendMessage() {
         // 백엔드 API 호출
         const location = window.appState?.currentLocation || { lat: 37.5665, lng: 126.9780 };
         
-        const response = await fetch('http://localhost:3000/api/chatbot/message', {
+        const response = await fetch(`${API_BASE_URL}/api/chatbot/message`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -215,7 +218,7 @@ async function makeReservation(restaurantId, restaurantName) {
 // 주차 예약
 async function reserveParking(parkingId) {
     try {
-        const response = await fetch('http://localhost:3000/api/bookings', {
+        const response = await fetch(`${API_BASE_URL}/api/bookings`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -446,15 +449,22 @@ function renderMessages() {
     container.innerHTML = '';
     
     chatbotState.messages.forEach(msg => {
-        const div = document.createElement('div');
-        div.className = `message ${msg.type}-message`;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chatbot-message ${msg.type}`;
         
-        const bubble = document.createElement('div');
-        bubble.className = 'message-bubble';
-        bubble.textContent = msg.text;
+        // 아바타
+        const avatar = document.createElement('div');
+        avatar.className = `message-avatar ${msg.type}`;
+        avatar.textContent = msg.type === 'bot' ? '🤖' : '👤';
         
-        div.appendChild(bubble);
-        container.appendChild(div);
+        // 메시지 내용
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.textContent = msg.text;
+        
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(content);
+        container.appendChild(messageDiv);
     });
     
     // 스크롤 하단으로
@@ -468,13 +478,22 @@ function showTyping() {
     
     const typingDiv = document.createElement('div');
     typingDiv.id = 'typing-indicator';
-    typingDiv.className = 'message bot-message';
-    typingDiv.innerHTML = `
-        <div class="message-bubble typing">
-            <span></span><span></span><span></span>
-        </div>
+    typingDiv.className = 'chatbot-message bot';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar bot';
+    avatar.textContent = '🤖';
+    
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'chatbot-typing';
+    typingIndicator.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
     `;
     
+    typingDiv.appendChild(avatar);
+    typingDiv.appendChild(typingIndicator);
     container.appendChild(typingDiv);
     container.scrollTop = container.scrollHeight;
 }
