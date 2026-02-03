@@ -122,6 +122,9 @@ async function handleLogin(e) {
             
             // 폼 리셋
             document.getElementById('loginForm').reset();
+            
+            // 온보딩 체크 (신규 사용자 아닐 가능성)
+            document.dispatchEvent(new Event('loginSuccess'));
         } else {
             showNotification(data.message || t('loginFailed'), 'error');
         }
@@ -174,6 +177,10 @@ async function handleSignup(e) {
             showNotification(t('signupSuccess'), 'success');
             
             // 폼 리셋
+            document.getElementById('signupForm').reset();
+            
+            // 온보딩 시작 (신규 가입자)
+            document.dispatchEvent(new Event('loginSuccess'));
             document.getElementById('signupForm').reset();
         } else {
             showNotification(data.message || t('signupFailed'), 'error');
