@@ -29,6 +29,20 @@ let bookings = [];
 let travelPlans = [];
 let itineraries = [];
 
+// Haversine 거리 계산 함수 (km)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // 지구 반지름 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+
 // 여행 목적별 추천 데이터
 const recommendations = {
     business: {
@@ -1059,6 +1073,288 @@ app.get('/api/destination-content/:destination', (req, res) => {
             blogs: naverBlogs
         }
     });
+});
+
+// ===== 챗봇 API =====
+
+// 챗봇 메시지 처리
+app.post('/api/chatbot/message', async (req, res) => {
+    try {
+        const { message, context, location } = req.body;
+        
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: '메시지를 입력해주세요.'
+            });
+        }
+        
+        // 의도 분석 (간단한 키워드 매칭)
+        const intent = analyzeIntent(message);
+        
+        // 의도에 따른 응답 생성
+        let response = {
+            success: true,
+            intent: intent.type,
+            message: '',
+            data: null,
+            quickActions: []
+        };
+        
+        switch (intent.type) {
+            case 'restaurant_search':
+                // 식당 검색
+                const restaurants = await searchRestaurants(intent.keywords, location);
+                response.message = `"${intent.keywords.join(', ')}" 검색 결과 ${restaurants.length}개의 식당을 찾았습니다.`;
+                response.data = restaurants;
+                response.quickActions = [
+                    { label: '지도에서 보기', action: 'show_on_map' },
+                    { label: '예약하기', action: 'make_reservation' },
+                    { label: '메뉴 보기', action: 'view_menu' }
+                ];
+                break;
+                
+            case 'parking_info':
+                // 주차 정보
+                const parkingInfo = await getParkingInfo(intent.keywords, location);
+                response.message = `주차 가능한 곳을 찾았습니다.`;
+                response.data = parkingInfo;
+                response.quickActions = [
+                    { label: '주차 예약', action: 'reserve_parking' },
+                    { label: '경로 안내', action: 'navigate' }
+                ];
+                break;
+                
+            case 'menu_order':
+                // 메뉴 예약
+                response.message = '어떤 메뉴를 예약하시겠어요?';
+                response.quickActions = [
+                    { label: '인기 메뉴', action: 'popular_menu' },
+                    { label: '추천 메뉴', action: 'recommended_menu' }
+                ];
+                break;
+                
+            case 'drivethru':
+                // 드라이브스루
+                const driveThruInfo = await getDriveThruInfo(intent.keywords, location);
+                response.message = '드라이브스루 가능한 매장을 찾았습니다.';
+                response.data = driveThruInfo;
+                response.quickActions = [
+                    { label: '메뉴 미리주문', action: 'preorder' },
+                    { label: '경로 안내', action: 'navigate' }
+                ];
+                break;
+                
+            case 'reservation':
+                // 예약
+                response.message = '예약 정보를 알려주세요. (날짜, 시간, 인원)';
+                response.quickActions = [
+                    { label: '오늘', action: 'today' },
+                    { label: '내일', action: 'tomorrow' },
+                    { label: '이번 주말', action: 'weekend' }
+                ];
+                break;
+                
+            case 'navigation':
+                // 경로 안내
+                response.message = '목적지까지의 경로를 안내합니다.';
+                response.quickActions = [
+                    { label: '자동차', action: 'car' },
+                    { label: '도보', action: 'walk' }
+                ];
+                break;
+                
+            default:
+                // 기본 응답
+                response.message = '무엇을 도와드릴까요? 식당 검색, 주차 정보, 예약 등을 물어보세요!';
+                response.quickActions = [
+                    { label: '식당 찾기', action: 'search_restaurant' },
+                    { label: '주차장 찾기', action: 'search_parking' },
+                    { label: '드라이브스루', action: 'drivethru' }
+                ];
+        }
+        
+        res.json(response);
+        
+    } catch (error) {
+        console.error('Chatbot error:', error);
+        res.status(500).json({
+            success: false,
+            message: '죄송합니다. 오류가 발생했습니다.',
+            error: error.message
+        });
+    }
+});
+
+// 의도 분석 함수
+function analyzeIntent(message) {
+    const msg = message.toLowerCase();
+    
+    const patterns = {
+        restaurant_search: [/식당/, /맛집/, /음식점/, /레스토랑/, /먹/, /카페/],
+        parking_info: [/주차/, /주차장/, /주차 가능/, /주차비/],
+        menu_order: [/메뉴/, /주문/, /예약/, /미리/],
+        drivethru: [/드라이브/, /스루/, /픽업/, /테이크/],
+        reservation: [/예약/, /예약하/, /예약할/],
+        navigation: [/경로/, /길/, /찾아/, /가는 법/, /어떻게/]
+    };
+    
+    for (const [intent, keywords] of Object.entries(patterns)) {
+        for (const pattern of keywords) {
+            if (pattern.test(msg)) {
+                // 키워드 추출
+                const extracted = extractKeywords(message);
+                return { type: intent, keywords: extracted };
+            }
+        }
+    }
+    
+    return { type: 'unknown', keywords: [] };
+}
+
+// 키워드 추출
+function extractKeywords(message) {
+    // 간단한 키워드 추출 (실제로는 NLP 사용)
+    const words = message.split(' ').filter(word => word.length > 1);
+    return words.slice(0, 3); // 최대 3개
+}
+
+// 식당 검색 (POI 서비스 활용)
+async function searchRestaurants(keywords, location) {
+    try {
+        const keyword = keywords.join(' ') || '맛집';
+        const lat = location?.lat || 37.5665;
+        const lng = location?.lng || 126.9780;
+        
+        // POI 서비스의 카테고리 검색 사용
+        const results = await searchPOI('FD6', lat, lng, 10); // FD6 = 음식점
+        
+        return results.slice(0, 5).map(place => ({
+            id: place.id,
+            name: place.place_name,
+            category: place.category_name,
+            address: place.address_name,
+            distance: place.distance,
+            phone: place.phone,
+            parking: Math.random() > 0.5, // 실제로는 DB에서
+            drivethru: Math.random() > 0.7,
+            rating: (Math.random() * 1.5 + 3.5).toFixed(1),
+            lat: parseFloat(place.y),
+            lng: parseFloat(place.x)
+        }));
+    } catch (error) {
+        console.error('Restaurant search error:', error);
+        return [];
+    }
+}
+
+// 주차 정보 조회
+async function getParkingInfo(keywords, location) {
+    const lat = location?.lat || 37.5665;
+    const lng = location?.lng || 126.9780;
+    
+    // 주차장 검색 (실제로는 API 호출)
+    return parkingLots
+        .filter(lot => {
+            const distance = calculateDistance(lat, lng, lot.lat, lot.lng);
+            return distance < 2; // 2km 이내
+        })
+        .slice(0, 3)
+        .map(lot => ({
+            ...lot,
+            distance: calculateDistance(lat, lng, lot.lat, lot.lng).toFixed(2)
+        }));
+}
+
+// 드라이브스루 정보
+async function getDriveThruInfo(keywords, location) {
+    const lat = location?.lat || 37.5665;
+    const lng = location?.lng || 126.9780;
+    
+    // 드라이브스루 가능한 매장 검색
+    const restaurants = await searchRestaurants(keywords, location);
+    return restaurants.filter(r => r.drivethru);
+}
+
+// 챗봇 식당 예약 API
+app.post('/api/chatbot/reservation', async (req, res) => {
+    try {
+        const { restaurantId, date, time, people, menu, notes } = req.body;
+        
+        if (!restaurantId || !date || !time || !people) {
+            return res.status(400).json({
+                success: false,
+                message: '예약 정보를 모두 입력해주세요.'
+            });
+        }
+        
+        // 예약 생성 (실제로는 DB 저장)
+        const reservation = {
+            id: Date.now(),
+            restaurantId,
+            date,
+            time,
+            people,
+            menu: menu || [],
+            notes: notes || '',
+            status: 'confirmed',
+            createdAt: new Date().toISOString()
+        };
+        
+        res.status(201).json({
+            success: true,
+            message: '예약이 완료되었습니다.',
+            data: reservation
+        });
+        
+    } catch (error) {
+        console.error('Reservation error:', error);
+        res.status(500).json({
+            success: false,
+            message: '예약 처리 중 오류가 발생했습니다.',
+            error: error.message
+        });
+    }
+});
+
+// 챗봇 메뉴 미리주문 API
+app.post('/api/chatbot/preorder', async (req, res) => {
+    try {
+        const { restaurantId, items, pickupTime, notes } = req.body;
+        
+        if (!restaurantId || !items || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: '주문 정보를 입력해주세요.'
+            });
+        }
+        
+        // 미리주문 생성
+        const order = {
+            id: Date.now(),
+            restaurantId,
+            items,
+            pickupTime: pickupTime || '30분 후',
+            notes: notes || '',
+            status: 'preparing',
+            total: items.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            createdAt: new Date().toISOString()
+        };
+        
+        res.status(201).json({
+            success: true,
+            message: '미리주문이 완료되었습니다. 픽업 시간에 방문해주세요.',
+            data: order
+        });
+        
+    } catch (error) {
+        console.error('Preorder error:', error);
+        res.status(500).json({
+            success: false,
+            message: '주문 처리 중 오류가 발생했습니다.',
+            error: error.message
+        });
+    }
 });
 
 // 헬스 체크
