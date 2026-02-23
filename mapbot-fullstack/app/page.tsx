@@ -20,6 +20,7 @@ const TABS = [
   { id: 'drt', label: 'DRT 배차', icon: '⚡' },
   { id: 'pricing', label: '요금·Point', icon: '💎' },
   { id: 'subscribe', label: 'Premium', icon: '👑' },
+  { id: 'community', label: '커뮤니티', icon: '👥' },
   { id: 'laas', label: 'LaaS AI', icon: '🤖' },
   { id: 'admin', label: '관리자', icon: '📊' },
 ];
@@ -199,6 +200,12 @@ export default function MapBotPage() {
   const [currentPlan, setCurrentPlan] = useState('free');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [userLevel, setUserLevel] = useState(1);
+  const [userXP, setUserXP] = useState(0);
+  const [achievements, setAchievements] = useState<string[]>(['🎉 첫 가입']);
+  const [tripHistory, setTripHistory] = useState<any[]>([]);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareData, setShareData] = useState<any>(null);
 
   // Init Firebase Auth
   useEffect(() => {
@@ -281,8 +288,49 @@ export default function MapBotPage() {
   const confirmBooking = () => {
     setBookingModal({ open: false, data: {} });
     setStep(3);
-    setMuPoints(muPoints + (parseInt(bookingModal.data.earn) || 0));
+    const earnedPoints = parseInt(bookingModal.data.earn) || 0;
+    setMuPoints(muPoints + earnedPoints);
+    
+    // Gamification: Add XP and check level up
+    addXP(50, '예약 완료');
+    
+    // Add to trip history
+    setTripHistory([...tripHistory, {
+      date: new Date(),
+      route: bookingModal.data.label,
+      points: earnedPoints,
+      mode: bookingModal.data.mode
+    }]);
+    
     notify('예약 확정! MU Point 적립 완료 🎫');
+  };
+
+  // ── Gamification ──────────────────────────────────────────────
+  const addXP = (xp: number, reason: string) => {
+    const newXP = userXP + xp;
+    const xpForNextLevel = userLevel * 100;
+    
+    if (newXP >= xpForNextLevel) {
+      const newLevel = userLevel + 1;
+      setUserLevel(newLevel);
+      setUserXP(newXP - xpForNextLevel);
+      notify(`🎉 레벨 ${newLevel} 달성! ${reason}`, 'success');
+      
+      // Unlock achievements
+      if (newLevel === 5) {
+        setAchievements([...achievements, '⭐ 열정적인 여행자']);
+      }
+      if (newLevel === 10) {
+        setAchievements([...achievements, '🏆 모빌리티 마스터']);
+      }
+    } else {
+      setUserXP(newXP);
+    }
+  };
+
+  const shareTrip = (trip: any) => {
+    setShareData(trip);
+    setShowShareModal(true);
   };
 
   // ── LaaS ──────────────────────────────────────────────────────
@@ -318,8 +366,21 @@ export default function MapBotPage() {
               <span>{t.icon}</span> {t.label}
             </button>
           ))}
+          
+          {/* Level & XP Display */}
+          <div className="hidden md:flex items-center gap-2 ml-3 mr-2 glass-card px-3 py-1.5 rounded-full">
+            <span className="text-[0.7rem] font-bold gradient-text">LV.{userLevel}</span>
+            <div className="w-20 h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-[#7c6ef5] to-[#5de6d0] transition-all duration-500"
+                style={{ width: `${(userXP / (userLevel * 100)) * 100}%` }}
+              />
+            </div>
+            <span className="text-[0.65rem] text-[#888899]">{userXP}/{userLevel * 100}XP</span>
+          </div>
+
           <div className="flex items-center gap-1.5 bg-[#5de67a]/[0.08] border border-[#5de67a]/20
-                          px-3 py-1.5 rounded-full text-[0.72rem] text-[#5de67a] font-semibold ml-2">
+                          px-3 py-1.5 rounded-full text-[0.72rem] text-[#5de67a] font-semibold">
             <span className="w-1.5 h-1.5 rounded-full bg-[#5de67a] animate-pulse" />
             AI 온라인
           </div>
@@ -1039,6 +1100,135 @@ export default function MapBotPage() {
           </div>
         )}
 
+        {/* ══ COMMUNITY TAB ══ */}
+        {activeTab === 'community' && (
+          <div className="animate-fade-in">
+            {/* Leaderboard & Achievements */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Leaderboard */}
+              <div className="card-3d">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="font-serif text-2xl">🏆 리더보드</div>
+                  <div className="text-xs text-[#888899]">이번 주</div>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { rank: 1, name: '김민수', level: 12, xp: 2400, badge: '👑' },
+                    { rank: 2, name: '이지은', level: 10, xp: 1950, badge: '🥈' },
+                    { rank: 3, name: '박준영', level: 9, xp: 1820, badge: '🥉' },
+                    { rank: 4, name: currentPlan !== 'free' ? '나' : '???', level: userLevel, xp: userXP + (userLevel - 1) * 100, badge: '👤', highlight: true },
+                    { rank: 5, name: '최서윤', level: 8, xp: 1650, badge: '⭐' },
+                  ].map((user, i) => (
+                    <div key={i} className={`flex items-center justify-between p-4 rounded-xl transition-all ${
+                      user.highlight
+                        ? 'bg-gradient-to-r from-[#7c6ef5]/20 to-[#5de6d0]/20 border-2 border-[#7c6ef5]/50'
+                        : 'bg-white/[0.03] hover:bg-white/[0.05]'
+                    }`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`text-2xl ${user.highlight ? 'animate-bounce-slow' : ''}`}>{user.badge}</div>
+                        <div>
+                          <div className="font-semibold flex items-center gap-2">
+                            {user.name}
+                            {user.highlight && <span className="text-xs text-[#7c6ef5]">(나)</span>}
+                          </div>
+                          <div className="text-xs text-[#888899]">레벨 {user.level} · {user.xp}XP</div>
+                        </div>
+                      </div>
+                      <div className="text-2xl font-bold gradient-text">#{user.rank}</div>
+                    </div>
+                  ))}
+                </div>
+                {currentPlan === 'free' && (
+                  <div className="mt-4 p-4 bg-white/[0.03] rounded-xl border border-white/[0.07] text-center">
+                    <div className="text-sm text-[#888899] mb-2">
+                      🔒 프리미엄 회원만 리더보드에 참여할 수 있습니다
+                    </div>
+                    <button
+                      className="btn-accent btn-sm"
+                      onClick={() => setActiveTab('subscribe')}>
+                      Premium 가입하기
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Achievements */}
+              <div className="card-3d">
+                <div className="font-serif text-2xl mb-6">🎖️ 내 업적</div>
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  {achievements.map((achievement, i) => (
+                    <div key={i} className="glass-card p-4 rounded-xl text-center animate-scale-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                      <div className="text-3xl mb-2">{achievement.split(' ')[0]}</div>
+                      <div className="text-xs text-[#888899]">{achievement.split(' ').slice(1).join(' ')}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white/[0.03] rounded-xl p-4">
+                  <div className="text-sm font-semibold mb-3">🎯 다음 업적까지</div>
+                  <div className="space-y-2">
+                    {[
+                      { emoji: '🚀', title: '스피드러너', desc: '10회 빠른 경로 이용', progress: Math.min(tripHistory.length, 10), max: 10 },
+                      { emoji: '💎', title: '포인트 수집가', desc: '1000P 적립', progress: Math.min(muPoints, 1000), max: 1000 },
+                      { emoji: '🌍', title: '여행 탐험가', desc: '5개 도시 방문', progress: 1, max: 5 },
+                    ].map((achievement, i) => (
+                      <div key={i}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>{achievement.emoji} {achievement.title}</span>
+                          <span className="text-[#888899]">{achievement.progress}/{achievement.max}</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-[#7c6ef5] to-[#5de6d0] transition-all duration-500"
+                            style={{ width: `${(achievement.progress / achievement.max) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Trip History & Reviews */}
+            <div className="card-3d">
+              <div className="font-serif text-2xl mb-6">📜 여행 기록 & 리뷰</div>
+              {tripHistory.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">🗺️</div>
+                  <div className="text-[#888899] mb-4">아직 여행 기록이 없습니다</div>
+                  <button
+                    className="btn-accent"
+                    onClick={() => setActiveTab('mobility')}>
+                    첫 여행 시작하기
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {tripHistory.slice(0, 5).map((trip, i) => (
+                    <div key={i} className="result-item flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xl">{trip.mode === 'DRT' ? '⚡' : trip.mode === 'bus' ? '🚌' : '🚗'}</span>
+                          <div className="font-semibold">{trip.route}</div>
+                          <span className="tag tag-teal">{trip.mode}</span>
+                        </div>
+                        <div className="text-xs text-[#888899]">
+                          {new Date(trip.date).toLocaleDateString('ko-KR')} · +{trip.points}P 적립
+                        </div>
+                      </div>
+                      <button
+                        className="btn-ghost btn-sm"
+                        onClick={() => shareTrip(trip)}>
+                        📤 공유
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ══ ADMIN TAB ══ */}
         {activeTab === 'admin' && <AdminPanel vehicles={vehicles} />}
       </main>
@@ -1183,6 +1373,91 @@ export default function MapBotPage() {
             </button>
             <div className="text-center text-xs text-[#888899] mt-3">
               안전한 PG사 결제 시스템을 이용합니다
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── SHARE MODAL ── */}
+      {showShareModal && shareData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-fade-in"
+          onClick={() => setShowShareModal(false)}>
+          <div className="glass-card rounded-3xl p-8 max-w-md w-full animate-scale-in"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <div className="font-serif text-2xl">📤 여행 공유</div>
+              <button className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                onClick={() => setShowShareModal(false)}>
+                ✕
+              </button>
+            </div>
+
+            {/* Share Preview */}
+            <div className="bg-gradient-to-br from-[#7c6ef5]/20 to-[#5de6d0]/20 rounded-2xl p-6 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#7c6ef5] to-[#9b8ff8] flex items-center justify-center text-2xl">
+                  🗺️
+                </div>
+                <div>
+                  <div className="font-semibold">{shareData.route}</div>
+                  <div className="text-xs text-[#888899]">MapBot으로 여행했어요!</div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <span className="tag">{shareData.mode}</span>
+                <span className="tag tag-teal">+{shareData.points}P</span>
+                <span className="tag tag-gold">LV.{userLevel}</span>
+              </div>
+            </div>
+
+            {/* Social Share Buttons */}
+            <div className="space-y-3 mb-6">
+              <button
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-[#FEE500] hover:bg-[#FDD000] text-[#000000] font-semibold transition-all"
+                onClick={() => {
+                  notify('카카오톡으로 공유되었습니다! 🎉');
+                  addXP(10, '여행 공유');
+                  setShowShareModal(false);
+                }}>
+                <span className="flex items-center gap-2">
+                  <span className="text-xl">💬</span>
+                  카카오톡 공유
+                </span>
+                <span>→</span>
+              </button>
+
+              <button
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] text-white font-semibold transition-all hover:opacity-90"
+                onClick={() => {
+                  notify('인스타그램 스토리에 공유되었습니다! ✨');
+                  addXP(10, '여행 공유');
+                  setShowShareModal(false);
+                }}>
+                <span className="flex items-center gap-2">
+                  <span className="text-xl">📷</span>
+                  인스타그램 스토리
+                </span>
+                <span>→</span>
+              </button>
+
+              <button
+                className="w-full flex items-center justify-between p-4 rounded-xl glass-card hover:bg-white/[0.08] transition-all"
+                onClick={() => {
+                  navigator.clipboard?.writeText(`${shareData.route}에 다녀왔어요! MapBot으로 +${shareData.points}P 적립 🎉`);
+                  notify('링크가 복사되었습니다! 📋');
+                  addXP(5, '링크 복사');
+                  setShowShareModal(false);
+                }}>
+                <span className="flex items-center gap-2">
+                  <span className="text-xl">🔗</span>
+                  링크 복사
+                </span>
+                <span>→</span>
+              </button>
+            </div>
+
+            <div className="text-xs text-[#888899] text-center">
+              공유하면 +10XP를 획득합니다!
             </div>
           </div>
         </div>
