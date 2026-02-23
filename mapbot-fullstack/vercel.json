@@ -1,0 +1,21 @@
+{
+  "framework": "nextjs",
+  "regions": ["icn1"],
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_KAKAO_MAP_KEY": "9ae99572568cbb7dc7d90ce792f63aa9",
+    "KAKAO_REST_API_KEY": "5fb47e56131ad4934b7cff2f8b8e3cac"
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ]
+}
