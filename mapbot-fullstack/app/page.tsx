@@ -220,6 +220,26 @@ export default function MyMapBotPage() {
   const [showCartModal, setShowCartModal] = useState(false);
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const [demoProductId, setDemoProductId] = useState<string | null>(null);
+  
+  // Demo states for each product
+  const [fashionStyle, setFashionStyle] = useState('casual');
+  const [fashionColor, setFashionColor] = useState('blue');
+  const [healthGoal, setHealthGoal] = useState('weight-loss');
+  const [healthAge, setHealthAge] = useState(30);
+  const [beautySkinType, setBeautySkinType] = useState('normal');
+  const [beautyConcern, setBeautyConcern] = useState('wrinkles');
+  const [financeRisk, setFinanceRisk] = useState('medium');
+  const [financeAmount, setFinanceAmount] = useState(1000000);
+  const [travelDestination, setTravelDestination] = useState('japan');
+  const [travelDuration, setTravelDuration] = useState(5);
+  const [careerField, setCareerField] = useState('it');
+  const [careerLevel, setCareerLevel] = useState('junior');
+  
+  // Demo results
+  const [demoResult, setDemoResult] = useState<any>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Notifications
   const [notifications, setNotifications] = useState<Array<{ id: number; text: string; type: string }>>([]);
@@ -257,6 +277,159 @@ export default function MyMapBotPage() {
     const product = LAAS_PRODUCTS.find(p => p.id === id);
     return sum + (product?.monthly || 0);
   }, 0);
+
+  // Open demo modal
+  const openDemo = (productId: string) => {
+    setDemoProductId(productId);
+    setShowDemoModal(true);
+    setDemoResult(null);
+  };
+
+  // Generate demo result
+  const generateDemoResult = () => {
+    setIsGenerating(true);
+    
+    setTimeout(() => {
+      let result: any = {};
+      
+      switch (demoProductId) {
+        case 'fashion':
+          result = {
+            title: '🎨 맞춤 스타일 분석 결과',
+            style: fashionStyle,
+            color: fashionColor,
+            recommendations: [
+              { item: '슬림핏 청바지', brand: 'Levi\'s', price: '89,000원', match: 95 },
+              { item: '캐주얼 니트', brand: 'Uniqlo', price: '59,000원', match: 92 },
+              { item: '스니커즈', brand: 'Nike', price: '129,000원', match: 88 },
+            ],
+            tips: [
+              '당신의 스타일에는 심플한 디자인이 잘 어울립니다',
+              `${fashionColor === 'blue' ? '블루 계열' : fashionColor === 'black' ? '블랙 계열' : '화이트 계열'} 컬러를 베이스로 활용하세요`,
+              '액세서리는 최소화하고 핏에 집중하세요'
+            ]
+          };
+          break;
+          
+        case 'healthcare':
+          result = {
+            title: '💪 건강 분석 리포트',
+            goal: healthGoal,
+            age: healthAge,
+            bmi: 23.5,
+            exercises: [
+              { name: '유산소 운동', frequency: '주 3회', duration: '30분', calories: 300 },
+              { name: '근력 운동', frequency: '주 2회', duration: '45분', calories: 250 },
+              { name: '스트레칭', frequency: '매일', duration: '15분', calories: 50 },
+            ],
+            nutrition: {
+              calories: 2000,
+              protein: '120g',
+              carbs: '250g',
+              fat: '60g'
+            },
+            prediction: healthGoal === 'weight-loss' ? '3개월 내 5kg 감량 가능' : '3개월 내 근육량 3kg 증가 가능'
+          };
+          break;
+          
+        case 'beauty':
+          result = {
+            title: '✨ 피부 분석 결과',
+            skinType: beautySkinType,
+            concern: beautyConcern,
+            skinScore: 72,
+            routine: [
+              { step: 1, name: '클렌징 폼', product: 'Cetaphil Gentle Cleanser', time: '아침/저녁' },
+              { step: 2, name: '토너', product: 'Klairs Supple Preparation', time: '아침/저녁' },
+              { step: 3, name: '세럼', product: 'The Ordinary Niacinamide', time: '저녁' },
+              { step: 4, name: '보습크림', product: 'CeraVe Moisturizing Cream', time: '아침/저녁' },
+              { step: 5, name: '선크림', product: 'La Roche-Posay SPF50', time: '아침' },
+            ],
+            tips: [
+              `${beautySkinType === 'dry' ? '건조한' : beautySkinType === 'oily' ? '지성' : '복합성'} 피부는 충분한 수분 공급이 중요합니다`,
+              `${beautyConcern === 'wrinkles' ? '주름' : beautyConcern === 'acne' ? '여드름' : '색소침착'} 개선을 위해 레티놀 성분 제품을 추천합니다`,
+              '자외선 차단제는 매일 필수로 사용하세요'
+            ]
+          };
+          break;
+          
+        case 'finance':
+          result = {
+            title: '📊 투자 포트폴리오',
+            risk: financeRisk,
+            amount: financeAmount,
+            allocation: financeRisk === 'low' 
+              ? { stocks: 30, bonds: 50, cash: 20 }
+              : financeRisk === 'high'
+              ? { stocks: 70, bonds: 20, cash: 10 }
+              : { stocks: 50, bonds: 35, cash: 15 },
+            products: [
+              { name: 'KODEX 200', type: '국내주식ETF', ratio: 30, expected: '연 8-10%' },
+              { name: 'ACE 미국S&P500', type: '해외주식ETF', ratio: 25, expected: '연 10-12%' },
+              { name: 'KOSEF 국고채', type: '채권ETF', ratio: 30, expected: '연 3-4%' },
+              { name: 'MMF', type: '현금성자산', ratio: 15, expected: '연 2-3%' },
+            ],
+            expectedReturn: financeRisk === 'low' ? '연 5-7%' : financeRisk === 'high' ? '연 12-15%' : '연 8-10%',
+            riskLevel: financeRisk === 'low' ? '낮음 (변동성 10% 이내)' : financeRisk === 'high' ? '높음 (변동성 20% 이상)' : '중간 (변동성 15% 이내)'
+          };
+          break;
+          
+        case 'travel':
+          result = {
+            title: '✈️ 맞춤 여행 플랜',
+            destination: travelDestination,
+            duration: travelDuration,
+            itinerary: Array.from({ length: travelDuration }, (_, i) => ({
+              day: i + 1,
+              activities: [
+                { time: '09:00', place: i === 0 ? '공항 도착 & 호텔 체크인' : '관광지 A 방문', note: '사전 예약 필수' },
+                { time: '12:00', place: '현지 맛집 점심', note: '추천 메뉴: 현지 특선' },
+                { time: '14:00', place: '관광지 B 투어', note: '가이드 투어 추천' },
+                { time: '18:00', place: '석식 & 자유 시간', note: '쇼핑/휴식' },
+              ]
+            })),
+            budget: {
+              flight: 500000,
+              accommodation: 400000,
+              food: 300000,
+              activity: 200000,
+              total: 1400000
+            },
+            tips: [
+              '여행자 보험 가입을 권장합니다',
+              '현지 화폐를 미리 환전하세요',
+              '인기 관광지는 사전 예약이 필수입니다'
+            ]
+          };
+          break;
+          
+        case 'education':
+          result = {
+            title: '🎯 커리어 로드맵',
+            field: careerField,
+            level: careerLevel,
+            roadmap: [
+              { phase: '1개월차', focus: '기초 다지기', tasks: ['온라인 강의 수강', '프로젝트 시작', '포트폴리오 준비'] },
+              { phase: '3개월차', focus: '실전 경험', tasks: ['사이드 프로젝트 완성', '오픈소스 기여', '네트워킹'] },
+              { phase: '6개월차', focus: '취업 준비', tasks: ['이력서 작성', '모의 면접', '채용 공고 지원'] },
+            ],
+            skills: [
+              { name: 'JavaScript', level: 'Advanced', priority: 'High' },
+              { name: 'React', level: 'Intermediate', priority: 'High' },
+              { name: 'Node.js', level: 'Intermediate', priority: 'Medium' },
+              { name: 'TypeScript', level: 'Basic', priority: 'Medium' },
+            ],
+            salary: careerLevel === 'junior' ? '3,500만원' : careerLevel === 'mid' ? '5,000만원' : '7,000만원',
+            companies: ['네이버', '카카오', '쿠팡', '토스', '당근마켓']
+          };
+          break;
+      }
+      
+      setDemoResult(result);
+      setIsGenerating(false);
+      notify('✅ 분석 완료! 스크롤하여 결과를 확인하세요', 'success');
+    }, 2000);
+  };
 
   // Contact form submit
   const handleContactSubmit = (e: React.FormEvent) => {
@@ -629,7 +802,7 @@ export default function MyMapBotPage() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        notify(`${product.demo} 페이지로 이동합니다`, 'info');
+                        openDemo(product.id);
                       }}
                       className="px-4 btn-ghost py-3 text-sm hover:scale-105 transition-transform">
                       체험하기
@@ -1122,6 +1295,526 @@ export default function MyMapBotPage() {
                   </button>
                 </div>
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── DEMO MODAL ── */}
+      {showDemoModal && demoProductId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto"
+             onClick={() => setShowDemoModal(false)}>
+          <div className="glass-card p-8 rounded-3xl max-w-4xl w-full border-2 border-[#7c6ef5]/30 animate-scale-in my-8"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-serif font-semibold gradient-text">
+                {LAAS_PRODUCTS.find(p => p.id === demoProductId)?.demo || '체험하기'}
+              </h3>
+              <button onClick={() => setShowDemoModal(false)} className="text-2xl text-[#888899] hover:text-white">
+                ✕
+              </button>
+            </div>
+
+            {/* Demo Input Forms */}
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {/* Fashion Demo */}
+              {demoProductId === 'fashion' && (
+                <>
+                  <div>
+                    <label className="label">선호하는 스타일</label>
+                    <select value={fashionStyle} onChange={(e) => setFashionStyle(e.target.value)} className="input">
+                      <option value="casual">캐주얼</option>
+                      <option value="formal">포멀</option>
+                      <option value="street">스트릿</option>
+                      <option value="minimal">미니멀</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">좋아하는 색상</label>
+                    <select value={fashionColor} onChange={(e) => setFashionColor(e.target.value)} className="input">
+                      <option value="black">블랙</option>
+                      <option value="white">화이트</option>
+                      <option value="blue">블루</option>
+                      <option value="beige">베이지</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Healthcare Demo */}
+              {demoProductId === 'healthcare' && (
+                <>
+                  <div>
+                    <label className="label">건강 목표</label>
+                    <select value={healthGoal} onChange={(e) => setHealthGoal(e.target.value)} className="input">
+                      <option value="weight-loss">체중 감량</option>
+                      <option value="muscle-gain">근육 증가</option>
+                      <option value="endurance">체력 향상</option>
+                      <option value="flexibility">유연성 개선</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">나이</label>
+                    <input 
+                      type="number" 
+                      value={healthAge} 
+                      onChange={(e) => setHealthAge(parseInt(e.target.value))} 
+                      className="input"
+                      min="18"
+                      max="80"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Beauty Demo */}
+              {demoProductId === 'beauty' && (
+                <>
+                  <div>
+                    <label className="label">피부 타입</label>
+                    <select value={beautySkinType} onChange={(e) => setBeautySkinType(e.target.value)} className="input">
+                      <option value="normal">정상</option>
+                      <option value="dry">건성</option>
+                      <option value="oily">지성</option>
+                      <option value="combination">복합성</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">주요 고민</label>
+                    <select value={beautyConcern} onChange={(e) => setBeautyConcern(e.target.value)} className="input">
+                      <option value="wrinkles">주름</option>
+                      <option value="acne">여드름</option>
+                      <option value="pigmentation">색소침착</option>
+                      <option value="pores">모공</option>
+                    </select>
+                  </div>
+                </>
+              )}
+
+              {/* Finance Demo */}
+              {demoProductId === 'finance' && (
+                <>
+                  <div>
+                    <label className="label">투자 성향</label>
+                    <select value={financeRisk} onChange={(e) => setFinanceRisk(e.target.value)} className="input">
+                      <option value="low">안정형 (낮은 위험)</option>
+                      <option value="medium">균형형 (중간 위험)</option>
+                      <option value="high">공격형 (높은 위험)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">투자 금액</label>
+                    <input 
+                      type="number" 
+                      value={financeAmount} 
+                      onChange={(e) => setFinanceAmount(parseInt(e.target.value))} 
+                      className="input"
+                      min="100000"
+                      step="100000"
+                      placeholder="1,000,000"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Travel Demo */}
+              {demoProductId === 'travel' && (
+                <>
+                  <div>
+                    <label className="label">여행지</label>
+                    <select value={travelDestination} onChange={(e) => setTravelDestination(e.target.value)} className="input">
+                      <option value="japan">일본 (도쿄)</option>
+                      <option value="korea">국내 (제주)</option>
+                      <option value="europe">유럽 (파리)</option>
+                      <option value="sea">동남아 (방콕)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">여행 기간 (일)</label>
+                    <input 
+                      type="number" 
+                      value={travelDuration} 
+                      onChange={(e) => setTravelDuration(parseInt(e.target.value))} 
+                      className="input"
+                      min="3"
+                      max="14"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Career Demo */}
+              {demoProductId === 'education' && (
+                <>
+                  <div>
+                    <label className="label">희망 분야</label>
+                    <select value={careerField} onChange={(e) => setCareerField(e.target.value)} className="input">
+                      <option value="it">IT / 개발</option>
+                      <option value="design">디자인</option>
+                      <option value="marketing">마케팅</option>
+                      <option value="finance">금융</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label">경력 수준</label>
+                    <select value={careerLevel} onChange={(e) => setCareerLevel(e.target.value)} className="input">
+                      <option value="junior">신입 (0-2년)</option>
+                      <option value="mid">중급 (3-5년)</option>
+                      <option value="senior">시니어 (6년+)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Generate Button */}
+            <button 
+              onClick={generateDemoResult}
+              disabled={isGenerating}
+              className="btn-accent w-full py-4 text-lg font-bold mb-8 disabled:opacity-50 disabled:cursor-not-allowed">
+              {isGenerating ? (
+                <>
+                  <span className="inline-block animate-spin mr-2">⏳</span>
+                  AI 분석 중...
+                </>
+              ) : (
+                '분석 시작 🚀'
+              )}
+            </button>
+
+            {/* Demo Result */}
+            {demoResult && (
+              <div className="glass-card p-8 rounded-2xl border border-[#7c6ef5]/20 animate-fade-in">
+                <h4 className="text-2xl font-semibold mb-6 gradient-text">{demoResult.title}</h4>
+
+                {/* Fashion Result */}
+                {demoProductId === 'fashion' && (
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {demoResult.recommendations.map((rec: any, i: number) => (
+                        <div key={i} className="card-3d p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-bold text-[#7c6ef5]">매칭도 {rec.match}%</span>
+                            <div className="w-16 h-1 bg-white/10 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-[#7c6ef5] to-[#5de6d0]" style={{ width: `${rec.match}%` }} />
+                            </div>
+                          </div>
+                          <h5 className="font-semibold text-white mb-1">{rec.item}</h5>
+                          <p className="text-xs text-[#888899] mb-1">{rec.brand}</p>
+                          <p className="text-lg font-bold text-[#5de6d0]">{rec.price}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">스타일링 팁</h5>
+                      <ul className="space-y-2">
+                        {demoResult.tips.map((tip: string, i: number) => (
+                          <li key={i} className="flex items-start gap-2 text-[#b8b8cc]">
+                            <span className="text-[#5de6d0] mt-1">✓</span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Healthcare Result */}
+                {demoProductId === 'healthcare' && (
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="card-3d p-4">
+                        <h5 className="text-sm font-bold text-[#7c6ef5] mb-3">BMI 지수</h5>
+                        <p className="text-3xl font-bold gradient-text">{demoResult.bmi}</p>
+                        <p className="text-xs text-[#888899] mt-1">정상 범위 (18.5-24.9)</p>
+                      </div>
+                      <div className="card-3d p-4">
+                        <h5 className="text-sm font-bold text-[#7c6ef5] mb-3">목표 달성 예상</h5>
+                        <p className="text-lg font-semibold text-white">{demoResult.prediction}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">추천 운동 프로그램</h5>
+                      <div className="space-y-3">
+                        {demoResult.exercises.map((ex: any, i: number) => (
+                          <div key={i} className="glass-card p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-white">{ex.name}</p>
+                              <p className="text-xs text-[#888899]">{ex.frequency} · {ex.duration}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-[#5de6d0]">{ex.calories} kcal</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="card-3d p-3 text-center">
+                        <p className="text-xs text-[#888899] mb-1">칼로리</p>
+                        <p className="font-bold text-white">{demoResult.nutrition.calories}</p>
+                      </div>
+                      <div className="card-3d p-3 text-center">
+                        <p className="text-xs text-[#888899] mb-1">단백질</p>
+                        <p className="font-bold text-white">{demoResult.nutrition.protein}</p>
+                      </div>
+                      <div className="card-3d p-3 text-center">
+                        <p className="text-xs text-[#888899] mb-1">탄수화물</p>
+                        <p className="font-bold text-white">{demoResult.nutrition.carbs}</p>
+                      </div>
+                      <div className="card-3d p-3 text-center">
+                        <p className="text-xs text-[#888899] mb-1">지방</p>
+                        <p className="font-bold text-white">{demoResult.nutrition.fat}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Beauty Result */}
+                {demoProductId === 'beauty' && (
+                  <div className="space-y-6">
+                    <div className="card-3d p-6 text-center">
+                      <p className="text-sm text-[#888899] mb-2">피부 점수</p>
+                      <div className="flex items-center justify-center gap-4">
+                        <div className="relative w-32 h-32">
+                          <svg className="transform -rotate-90" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="#333" strokeWidth="8" />
+                            <circle 
+                              cx="50" 
+                              cy="50" 
+                              r="40" 
+                              fill="none" 
+                              stroke="url(#gradient)" 
+                              strokeWidth="8"
+                              strokeDasharray={`${demoResult.skinScore * 2.51} 251`}
+                              strokeLinecap="round"
+                            />
+                            <defs>
+                              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#7c6ef5" />
+                                <stop offset="100%" stopColor="#5de6d0" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-3xl font-bold gradient-text">{demoResult.skinScore}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">맞춤 스킨케어 루틴</h5>
+                      <div className="space-y-2">
+                        {demoResult.routine.map((step: any) => (
+                          <div key={step.step} className="glass-card p-4 rounded-xl flex items-center gap-4">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c6ef5] to-[#5de6d0] flex items-center justify-center font-bold text-white">
+                              {step.step}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-semibold text-white">{step.name}</p>
+                              <p className="text-xs text-[#888899]">{step.product}</p>
+                            </div>
+                            <span className="text-xs text-[#5de6d0] font-semibold">{step.time}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">전문가 조언</h5>
+                      <ul className="space-y-2">
+                        {demoResult.tips.map((tip: string, i: number) => (
+                          <li key={i} className="flex items-start gap-2 text-[#b8b8cc]">
+                            <span className="text-[#5de6d0] mt-1">✓</span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Finance Result */}
+                {demoProductId === 'finance' && (
+                  <div className="space-y-6">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div className="card-3d p-4 text-center">
+                        <p className="text-xs text-[#888899] mb-2">주식</p>
+                        <p className="text-2xl font-bold gradient-text">{demoResult.allocation.stocks}%</p>
+                      </div>
+                      <div className="card-3d p-4 text-center">
+                        <p className="text-xs text-[#888899] mb-2">채권</p>
+                        <p className="text-2xl font-bold gradient-text">{demoResult.allocation.bonds}%</p>
+                      </div>
+                      <div className="card-3d p-4 text-center">
+                        <p className="text-xs text-[#888899] mb-2">현금</p>
+                        <p className="text-2xl font-bold gradient-text">{demoResult.allocation.cash}%</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">추천 상품</h5>
+                      <div className="space-y-3">
+                        {demoResult.products.map((prod: any, i: number) => (
+                          <div key={i} className="glass-card p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-white">{prod.name}</p>
+                              <p className="text-xs text-[#888899]">{prod.type} · 비중 {prod.ratio}%</p>
+                            </div>
+                            <p className="text-sm font-bold text-[#5de6d0]">{prod.expected}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="card-3d p-4">
+                        <p className="text-xs text-[#888899] mb-1">예상 수익률</p>
+                        <p className="text-xl font-bold text-[#5de6d0]">{demoResult.expectedReturn}</p>
+                      </div>
+                      <div className="card-3d p-4">
+                        <p className="text-xs text-[#888899] mb-1">위험 수준</p>
+                        <p className="text-lg font-semibold text-white">{demoResult.riskLevel}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Travel Result */}
+                {demoProductId === 'travel' && (
+                  <div className="space-y-6">
+                    <div className="card-3d p-6">
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-4 uppercase">예상 예산</h5>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div className="text-center">
+                          <p className="text-xs text-[#888899] mb-1">항공권</p>
+                          <p className="font-bold text-white">{(demoResult.budget.flight / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-[#888899] mb-1">숙박</p>
+                          <p className="font-bold text-white">{(demoResult.budget.accommodation / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-[#888899] mb-1">식비</p>
+                          <p className="font-bold text-white">{(demoResult.budget.food / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-[#888899] mb-1">관광</p>
+                          <p className="font-bold text-white">{(demoResult.budget.activity / 10000).toFixed(0)}만원</p>
+                        </div>
+                        <div className="text-center col-span-2 md:col-span-1">
+                          <p className="text-xs text-[#7c6ef5] mb-1 font-bold">총액</p>
+                          <p className="text-xl font-bold gradient-text">{(demoResult.budget.total / 10000).toFixed(0)}만원</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">여행 일정</h5>
+                      <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-thin">
+                        {demoResult.itinerary.map((day: any) => (
+                          <div key={day.day} className="glass-card p-4 rounded-xl">
+                            <h6 className="font-bold text-white mb-3">Day {day.day}</h6>
+                            <div className="space-y-2">
+                              {day.activities.map((act: any, i: number) => (
+                                <div key={i} className="flex items-start gap-3 pl-4 border-l-2 border-[#7c6ef5]/30">
+                                  <span className="text-xs text-[#7c6ef5] font-mono mt-1">{act.time}</span>
+                                  <div>
+                                    <p className="text-sm text-white">{act.place}</p>
+                                    <p className="text-xs text-[#888899]">{act.note}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">여행 팁</h5>
+                      <ul className="space-y-2">
+                        {demoResult.tips.map((tip: string, i: number) => (
+                          <li key={i} className="flex items-start gap-2 text-[#b8b8cc]">
+                            <span className="text-[#5de6d0] mt-1">✓</span>
+                            {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Career Result */}
+                {demoProductId === 'education' && (
+                  <div className="space-y-6">
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">커리어 로드맵</h5>
+                      <div className="space-y-3">
+                        {demoResult.roadmap.map((phase: any, i: number) => (
+                          <div key={i} className="glass-card p-4 rounded-xl">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c6ef5] to-[#5de6d0] flex items-center justify-center font-bold text-white text-sm">
+                                {i + 1}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-white">{phase.phase}</p>
+                                <p className="text-xs text-[#7c6ef5]">{phase.focus}</p>
+                              </div>
+                            </div>
+                            <ul className="space-y-1 pl-11">
+                              {phase.tasks.map((task: string, j: number) => (
+                                <li key={j} className="text-sm text-[#888899]">• {task}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h5 className="text-sm font-bold text-[#7c6ef5] mb-3 uppercase">필수 스킬</h5>
+                      <div className="grid md:grid-cols-2 gap-3">
+                        {demoResult.skills.map((skill: any, i: number) => (
+                          <div key={i} className="glass-card p-3 rounded-xl flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-white">{skill.name}</p>
+                              <p className="text-xs text-[#888899]">{skill.level}</p>
+                            </div>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              skill.priority === 'High' ? 'bg-red-500/20 text-red-400' : 'bg-yellow-500/20 text-yellow-400'
+                            }`}>
+                              {skill.priority}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="card-3d p-4">
+                        <p className="text-xs text-[#888899] mb-1">예상 연봉</p>
+                        <p className="text-2xl font-bold gradient-text">{demoResult.salary}</p>
+                      </div>
+                      <div className="card-3d p-4">
+                        <p className="text-xs text-[#888899] mb-2">추천 기업</p>
+                        <div className="flex flex-wrap gap-1">
+                          {demoResult.companies.map((company: string, i: number) => (
+                            <span key={i} className="text-xs bg-[#7c6ef5]/20 text-[#7c6ef5] px-2 py-1 rounded-full">
+                              {company}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA Button */}
+                <div className="mt-8 pt-6 border-t border-white/10">
+                  <button 
+                    onClick={() => {
+                      addToCart(demoProductId);
+                      setShowDemoModal(false);
+                    }}
+                    className="btn-accent w-full py-4 text-lg font-bold">
+                    이 서비스 구매하기 →
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
