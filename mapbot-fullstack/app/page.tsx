@@ -19,8 +19,102 @@ const TABS = [
   { id: 'fleet', label: 'Fleet 현황', icon: '🚗' },
   { id: 'drt', label: 'DRT 배차', icon: '⚡' },
   { id: 'pricing', label: '요금·Point', icon: '💎' },
+  { id: 'subscribe', label: 'Premium', icon: '👑' },
   { id: 'laas', label: 'LaaS AI', icon: '🤖' },
   { id: 'admin', label: '관리자', icon: '📊' },
+];
+
+const SUBSCRIPTION_PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    icon: '🆓',
+    price: 0,
+    period: '영구 무료',
+    color: 'from-[#888899] to-[#666677]',
+    features: [
+      { text: '기본 경로 탐색 (1일 3회)', included: true },
+      { text: '주변 시설 검색', included: true },
+      { text: 'DRT 배차 요청 (수수료 10%)', included: true },
+      { text: '100 MU Point 시작', included: true },
+      { text: '광고 포함', included: true },
+      { text: 'AI 챗봇 (제한적)', included: false },
+      { text: '프리미엄 경로 추천', included: false },
+      { text: 'LaaS AI 플랜', included: false },
+      { text: '우선 배차', included: false },
+      { text: '실시간 Fleet 추적', included: false },
+    ],
+    cta: '현재 플랜',
+    popular: false,
+  },
+  {
+    id: 'basic',
+    name: 'Basic',
+    icon: '⭐',
+    price: 9900,
+    period: '월',
+    color: 'from-[#5de6d0] to-[#3dd5c0]',
+    features: [
+      { text: '무제한 경로 탐색', included: true },
+      { text: '주변 시설 검색', included: true },
+      { text: 'DRT 배차 요청 (수수료 5%)', included: true },
+      { text: '500 MU Point 매월 지급', included: true },
+      { text: '광고 제거', included: true },
+      { text: 'AI 챗봇 기본', included: true },
+      { text: '프리미엄 경로 추천', included: true },
+      { text: 'LaaS AI 플랜 (1개)', included: false },
+      { text: '우선 배차', included: false },
+      { text: '실시간 Fleet 추적', included: false },
+    ],
+    cta: '시작하기',
+    popular: false,
+    discount: '첫 달 50% 할인',
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    icon: '💎',
+    price: 19900,
+    period: '월',
+    color: 'from-[#7c6ef5] to-[#9b8ff8]',
+    features: [
+      { text: '무제한 경로 탐색', included: true },
+      { text: '프리미엄 경로 추천', included: true },
+      { text: 'DRT 배차 요청 (수수료 0%)', included: true },
+      { text: '1,500 MU Point 매월 지급', included: true },
+      { text: '광고 제거 + 프리미엄 UI', included: true },
+      { text: 'AI 챗봇 Pro (우선 응답)', included: true },
+      { text: 'LaaS AI 플랜 (무제한)', included: true },
+      { text: '우선 배차 (30% 빠름)', included: true },
+      { text: '실시간 Fleet 추적', included: true },
+      { text: '멀티모달 최적화', included: true },
+    ],
+    cta: '가장 인기',
+    popular: true,
+    badge: 'BEST VALUE',
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    icon: '🏢',
+    price: 0,
+    period: '맞춤 견적',
+    color: 'from-[#f5c842] to-[#e6a020]',
+    features: [
+      { text: 'Pro 모든 기능 포함', included: true },
+      { text: '기업 전용 대시보드', included: true },
+      { text: '직원 계정 관리 (무제한)', included: true },
+      { text: '출장 정책 자동 검사', included: true },
+      { text: '월간 리포트 & 분석', included: true },
+      { text: '전담 CS & API 지원', included: true },
+      { text: '커스텀 브랜딩', included: true },
+      { text: 'SLA 99.9% 보장', included: true },
+      { text: '온프레미스 배포 옵션', included: true },
+      { text: '맞춤형 기능 개발', included: true },
+    ],
+    cta: '문의하기',
+    popular: false,
+  },
 ];
 
 const LAAS_DATA: Record<string, LaasPlan> = {
@@ -102,6 +196,9 @@ export default function MapBotPage() {
   const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'ai'; text: string }>>([
     { role: 'ai', text: '안녕하세요! 🤖 MapBot AI 어시스턴트입니다. 어떤 도움이 필요하신가요?' }
   ]);
+  const [currentPlan, setCurrentPlan] = useState('free');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
   // Init Firebase Auth
   useEffect(() => {
@@ -783,6 +880,165 @@ export default function MapBotPage() {
           </div>
         )}
 
+        {/* ══ SUBSCRIBE TAB ══ */}
+        {activeTab === 'subscribe' && (
+          <div className="animate-fade-in">
+            {/* Hero Banner */}
+            <div className="relative mb-12 rounded-3xl overflow-hidden glass-card p-12 text-center mesh-gradient">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#7c6ef5]/20 to-[#5de6d0]/20" />
+              <div className="relative z-10">
+                <div className="text-5xl mb-4 animate-bounce-slow inline-block">👑</div>
+                <h2 className="font-serif text-4xl font-bold gradient-text mb-4">
+                  Premium으로 업그레이드
+                </h2>
+                <p className="text-[#888899] text-lg max-w-2xl mx-auto mb-6">
+                  AI 기반 최적 경로, 우선 배차, 무제한 LaaS 플랜까지<br />
+                  프리미엄 기능으로 더 스마트한 모빌리티를 경험하세요
+                </p>
+                <div className="flex gap-4 justify-center flex-wrap">
+                  <div className="glass-card px-6 py-3 rounded-xl">
+                    <div className="text-2xl font-bold gradient-text">1,240+</div>
+                    <div className="text-xs text-[#888899]">일일 이용자</div>
+                  </div>
+                  <div className="glass-card px-6 py-3 rounded-xl">
+                    <div className="text-2xl font-bold gradient-text">4.9/5.0</div>
+                    <div className="text-xs text-[#888899]">사용자 평점</div>
+                  </div>
+                  <div className="glass-card px-6 py-3 rounded-xl">
+                    <div className="text-2xl font-bold gradient-text">99.9%</div>
+                    <div className="text-xs text-[#888899]">서비스 가동률</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {SUBSCRIPTION_PLANS.map((plan, i) => (
+                <div
+                  key={plan.id}
+                  className={`card-3d relative ${plan.popular ? 'ring-2 ring-[#7c6ef5] scale-105' : ''}`}
+                  style={{ animationDelay: `${i * 0.1}s` }}>
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <div className="bg-gradient-to-r from-[#7c6ef5] to-[#5de6d0] px-4 py-1 rounded-full text-xs font-bold text-white shadow-lg">
+                        {plan.badge}
+                      </div>
+                    </div>
+                  )}
+                  {plan.discount && (
+                    <div className="absolute -top-3 right-3">
+                      <div className="bg-[#f5c842] px-3 py-1 rounded-full text-xs font-bold text-[#0a0a0f]">
+                        {plan.discount}
+                      </div>
+                    </div>
+                  )}
+                  <div className="text-center mb-6">
+                    <div className="text-4xl mb-3">{plan.icon}</div>
+                    <div className="font-serif text-2xl font-bold mb-2">{plan.name}</div>
+                    <div className="flex items-baseline justify-center gap-1 mb-1">
+                      {plan.price > 0 ? (
+                        <>
+                          <span className="text-4xl font-bold gradient-text">
+                            {plan.price.toLocaleString()}
+                          </span>
+                          <span className="text-[#888899] text-sm">원/{plan.period}</span>
+                        </>
+                      ) : plan.id === 'free' ? (
+                        <span className="text-4xl font-bold gradient-text">무료</span>
+                      ) : (
+                        <span className="text-2xl font-bold gradient-text">{plan.period}</span>
+                      )}
+                    </div>
+                    {plan.price > 0 && plan.id !== 'enterprise' && (
+                      <div className="text-xs text-[#888899]">
+                        연 결제 시 2개월 무료
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Features */}
+                  <div className="space-y-3 mb-6">
+                    {plan.features.map((f, fi) => (
+                      <div key={fi} className="flex items-start gap-2 text-sm">
+                        <span className={`mt-0.5 ${f.included ? 'text-[#5de67a]' : 'text-[#888899]'}`}>
+                          {f.included ? '✓' : '○'}
+                        </span>
+                        <span className={f.included ? 'text-[#e8e8f0]' : 'text-[#888899] line-through'}>
+                          {f.text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <button
+                    onClick={() => {
+                      if (plan.id === currentPlan) {
+                        notify('현재 사용 중인 플랜입니다', 'error');
+                      } else if (plan.id === 'enterprise') {
+                        notify('기업 문의가 접수되었습니다! 곧 연락드리겠습니다 📧');
+                      } else {
+                        setSelectedPlan(plan);
+                        setShowPaymentModal(true);
+                      }
+                    }}
+                    disabled={plan.id === currentPlan}
+                    className={`w-full btn ${
+                      plan.popular
+                        ? 'btn-accent'
+                        : plan.id === 'enterprise'
+                        ? 'btn-gold'
+                        : plan.id === 'basic'
+                        ? 'btn-teal'
+                        : 'btn-ghost'
+                    } justify-center ${plan.id === currentPlan ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    {plan.id === currentPlan ? '✓ ' + plan.cta : plan.cta}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Benefits Section */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              {[
+                { icon: '🚀', title: '즉시 시작', desc: '가입 후 바로 프리미엄 기능 사용' },
+                { icon: '🔒', title: '안전한 결제', desc: '카카오페이/토스 간편 결제 지원' },
+                { icon: '↩️', title: '언제든 해지', desc: '위약금 없이 자유롭게 플랜 변경' },
+              ].map((b, i) => (
+                <div key={i} className="glass-card p-6 rounded-2xl text-center hover:scale-105 transition-transform">
+                  <div className="text-4xl mb-3">{b.icon}</div>
+                  <div className="font-semibold text-lg mb-2">{b.title}</div>
+                  <div className="text-sm text-[#888899]">{b.desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* FAQ */}
+            <div className="card-3d">
+              <div className="font-serif text-2xl mb-6">자주 묻는 질문</div>
+              <div className="space-y-4">
+                {[
+                  { q: '무료 플랜에서 언제든 업그레이드 가능한가요?', a: '네, 언제든지 프리미엄 플랜으로 업그레이드하실 수 있습니다. 남은 기간은 일할 계산됩니다.' },
+                  { q: '환불 정책은 어떻게 되나요?', a: '구독 후 7일 이내 100% 환불 가능합니다. 이후에는 남은 기간만큼 일할 계산하여 환불해드립니다.' },
+                  { q: 'MU Point는 무엇인가요?', a: 'MapBot 전용 포인트로 1P = 1원입니다. 결제 시 자동 차감되며, 프리미엄 회원은 매월 포인트가 지급됩니다.' },
+                  { q: '기업용 플랜은 어떤 혜택이 있나요?', a: '직원 계정 무제한, 전용 대시보드, 출장 정책 관리, API 지원 등 기업 맞춤 기능을 제공합니다.' },
+                ].map((faq, i) => (
+                  <details key={i} className="group">
+                    <summary className="cursor-pointer list-none flex justify-between items-center p-4 bg-white/[0.03] hover:bg-white/[0.05] rounded-xl transition-colors">
+                      <span className="font-medium">{faq.q}</span>
+                      <span className="text-[#7c6ef5] group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div className="p-4 text-sm text-[#888899] bg-white/[0.02] rounded-xl mt-2">
+                      {faq.a}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* ══ ADMIN TAB ══ */}
         {activeTab === 'admin' && <AdminPanel vehicles={vehicles} />}
       </main>
@@ -819,6 +1075,115 @@ export default function MapBotPage() {
             <button className="btn-accent w-full justify-center" onClick={confirmBooking}>
               ✅ 예약 확정
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── PAYMENT MODAL ── */}
+      {showPaymentModal && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-fade-in"
+          onClick={() => setShowPaymentModal(false)}>
+          <div className="glass-card rounded-3xl p-8 max-w-lg w-full animate-scale-in"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <div className="font-serif text-2xl">💳 결제하기</div>
+              <button className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
+                onClick={() => setShowPaymentModal(false)}>
+                ✕
+              </button>
+            </div>
+
+            {/* Plan Summary */}
+            <div className={`bg-gradient-to-br ${selectedPlan.color} p-6 rounded-2xl mb-6 text-white`}>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-4xl">{selectedPlan.icon}</span>
+                <div>
+                  <div className="font-bold text-xl">{selectedPlan.name} Plan</div>
+                  <div className="text-sm opacity-90">{selectedPlan.period} 구독</div>
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold">{selectedPlan.price.toLocaleString()}</span>
+                <span className="text-lg">원/월</span>
+              </div>
+              {selectedPlan.discount && (
+                <div className="mt-2 text-sm opacity-90">🎉 {selectedPlan.discount}</div>
+              )}
+            </div>
+
+            {/* Payment Methods */}
+            <div className="mb-6">
+              <label className="label mb-3">결제 수단</label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: 'card', icon: '💳', name: '카드' },
+                  { id: 'kakao', icon: '🟡', name: '카카오페이' },
+                  { id: 'toss', icon: '🔵', name: '토스' },
+                ].map((method) => (
+                  <button
+                    key={method.id}
+                    className="glass-card p-4 rounded-xl hover:border-[#7c6ef5]/50 hover:bg-white/[0.08] transition-all text-center">
+                    <div className="text-2xl mb-1">{method.icon}</div>
+                    <div className="text-xs">{method.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Discount Code */}
+            <div className="mb-6">
+              <label className="label">할인 코드 (선택)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  className="input-field flex-1"
+                  placeholder="WELCOME2024"
+                />
+                <button className="btn-ghost px-6">
+                  적용
+                </button>
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="bg-white/[0.03] rounded-xl p-5 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[#888899]">월 구독료</span>
+                <span className="font-semibold">{selectedPlan.price.toLocaleString()}원</span>
+              </div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[#888899]">할인</span>
+                <span className="text-[#5de6d0] font-semibold">-0원</span>
+              </div>
+              <div className="border-t border-white/[0.1] my-3" />
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-lg">총 결제 금액</span>
+                <span className="font-bold text-2xl gradient-text">{selectedPlan.price.toLocaleString()}원</span>
+              </div>
+            </div>
+
+            {/* Terms */}
+            <label className="flex items-start gap-2 mb-6 text-sm">
+              <input type="checkbox" className="mt-1" />
+              <span className="text-[#888899]">
+                <span className="text-[#e8e8f0]">서비스 이용약관</span> 및 <span className="text-[#e8e8f0]">개인정보 처리방침</span>에 동의합니다
+              </span>
+            </label>
+
+            {/* CTA */}
+            <button
+              className="btn-accent w-full justify-center text-lg py-4"
+              onClick={() => {
+                setShowPaymentModal(false);
+                setCurrentPlan(selectedPlan.id);
+                notify(`🎉 ${selectedPlan.name} 플랜 구독 완료! ${selectedPlan.features.find(f => f.text.includes('Point'))?.text || ''}`);
+                setActiveTab('mobility');
+              }}>
+              💳 {selectedPlan.price.toLocaleString()}원 결제하기
+            </button>
+            <div className="text-center text-xs text-[#888899] mt-3">
+              안전한 PG사 결제 시스템을 이용합니다
+            </div>
           </div>
         </div>
       )}

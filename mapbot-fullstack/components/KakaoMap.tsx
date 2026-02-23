@@ -111,22 +111,59 @@ export default function KakaoMap({
     canvas.height = canvas.offsetHeight;
     const W = canvas.width, H = canvas.height;
 
-    ctx.fillStyle = '#0d0d18';
+    // Dark gradient background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+    bgGrad.addColorStop(0, '#0a0a0f');
+    bgGrad.addColorStop(0.5, '#0d0d18');
+    bgGrad.addColorStop(1, '#0a0a0f');
+    ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, W, H);
 
-    // Grid
-    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    // Glowing grid
+    ctx.strokeStyle = 'rgba(124,110,245,0.08)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-    for (let y = 0; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    for (let x = 0; x < W; x += 50) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, H);
+      ctx.stroke();
+    }
+    for (let y = 0; y < H; y += 50) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(W, y);
+      ctx.stroke();
+    }
 
-    // City watermark
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.font = 'bold 32px Manrope, sans-serif';
+    // City label with glow
+    ctx.save();
+    ctx.shadowColor = 'rgba(124,110,245,0.5)';
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = 'rgba(124,110,245,0.15)';
+    ctx.font = 'bold 48px Manrope, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('포항시', W / 2, H / 2 + 12);
+    ctx.fillText('포항시', W / 2, H / 2 + 16);
+    ctx.restore();
 
-    // Heatmap circles
+    // Roads simulation
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([20, 10]);
+    ctx.beginPath();
+    ctx.moveTo(W * 0.2, 0);
+    ctx.lineTo(W * 0.2, H);
+    ctx.moveTo(W * 0.5, 0);
+    ctx.lineTo(W * 0.5, H);
+    ctx.moveTo(W * 0.8, 0);
+    ctx.lineTo(W * 0.8, H);
+    ctx.moveTo(0, H * 0.3);
+    ctx.lineTo(W, H * 0.3);
+    ctx.moveTo(0, H * 0.7);
+    ctx.lineTo(W, H * 0.7);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Heatmap circles with glow
     if (mode === 'heatmap') {
       heatmapPoints.forEach((hp) => {
         const x = ((hp.location.lng - 129.2) / 0.3) * W;
@@ -134,49 +171,106 @@ export default function KakaoMap({
         const r = hp.intensity * 80 + 20;
         const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
         const color = hp.intensity > 0.7 ? '245,94,94' : hp.intensity > 0.4 ? '245,200,66' : '93,230,208';
-        grad.addColorStop(0, `rgba(${color},${0.5 * hp.intensity + 0.2})`);
+        grad.addColorStop(0, `rgba(${color},${0.6 * hp.intensity + 0.3})`);
+        grad.addColorStop(0.5, `rgba(${color},${0.3 * hp.intensity + 0.1})`);
         grad.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = grad;
-        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.8)';
-        ctx.font = 'bold 11px Manrope, sans-serif';
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Label with shadow
+        ctx.save();
+        ctx.shadowColor = `rgba(${color},0.8)`;
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = 'rgba(255,255,255,0.9)';
+        ctx.font = 'bold 12px Manrope, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(hp.label, x, y + 4);
+        ctx.restore();
       });
     }
 
-    // Vehicle dots
+    // Vehicle markers with pulse effect
     if (mode === 'fleet' || mode === 'route') {
       vehicles.forEach((v) => {
         const x = ((v.location.lng - 129.2) / 0.3) * W;
         const y = H - ((v.location.lat - 35.9) / 0.3) * H;
         if (x < 0 || x > W || y < 0 || y > H) return;
+        
         const color = v.status === 'available' ? '#5de67a' : v.status === 'busy' ? '#f5c842' : '#555';
-        ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fillStyle = color + '33'; ctx.fill();
-        ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.fill();
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.font = '10px Manrope, sans-serif';
+        const time = Date.now() / 1000;
+        const pulse = Math.sin(time * 2) * 0.3 + 0.7;
+        
+        // Outer glow
+        ctx.save();
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 15 * pulse;
+        ctx.beginPath();
+        ctx.arc(x, y, 10 * pulse, 0, Math.PI * 2);
+        ctx.fillStyle = color + '22';
+        ctx.fill();
+        ctx.restore();
+        
+        // Inner dot
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Label
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = 'rgba(255,255,255,0.95)';
+        ctx.font = 'bold 11px Manrope, sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText(v.id, x + 8, y + 4);
+        ctx.fillText(v.id, x + 10, y + 4);
+        ctx.restore();
       });
     }
 
-    // Route line
+    // Route line with gradient
     if (selectedRoute && mode === 'route') {
       const allPts = selectedRoute.steps.flatMap((s) => s.path ?? []);
       if (allPts.length > 1) {
+        // Draw shadow first
+        ctx.save();
+        ctx.shadowColor = 'rgba(124,110,245,0.6)';
+        ctx.shadowBlur = 10;
         ctx.beginPath();
         allPts.forEach((p, i) => {
           const x = ((p.lng - 129.2) / 0.3) * W;
           const y = H - ((p.lat - 35.9) / 0.3) * H;
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         });
         ctx.strokeStyle = '#7c6ef5';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([8, 4]);
+        ctx.lineWidth = 5;
+        ctx.setLineDash([12, 6]);
         ctx.stroke();
+        ctx.restore();
+        
+        // Start/End markers
+        const start = allPts[0];
+        const end = allPts[allPts.length - 1];
+        const startX = ((start.lng - 129.2) / 0.3) * W;
+        const startY = H - ((start.lat - 35.9) / 0.3) * H;
+        const endX = ((end.lng - 129.2) / 0.3) * W;
+        const endY = H - ((end.lat - 35.9) / 0.3) * H;
+        
+        // Start marker (green)
+        ctx.fillStyle = '#5de67a';
+        ctx.beginPath();
+        ctx.arc(startX, startY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // End marker (purple)
+        ctx.fillStyle = '#7c6ef5';
+        ctx.beginPath();
+        ctx.arc(endX, endY, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
         ctx.setLineDash([]);
       }
     }
