@@ -274,6 +274,20 @@ export default function MyMapBotPage() {
   const [showCartModal, setShowCartModal] = useState(false);
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  
+  // ✨ NEW: Purchase & Service Usage States
+  const [purchasedProducts, setPurchasedProducts] = useState<string[]>([]);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [activeService, setActiveService] = useState<string | null>(null);
+  const [serviceProgress, setServiceProgress] = useState<{ [key: string]: number }>({});
+  const [aiResponses, setAiResponses] = useState<{ [key: string]: any[] }>({});
+  const [userProfile, setUserProfile] = useState({
+    name: '김맵봇',
+    level: 1,
+    joinDate: '2025-02-23',
+    totalUsage: 0,
+    subscription: 'starter'
+  });
   const [showDemoModal, setShowDemoModal] = useState(false);
   const [demoProductId, setDemoProductId] = useState<string | null>(null);
   
@@ -398,6 +412,113 @@ export default function MyMapBotPage() {
     const product = LAAS_PRODUCTS.find(p => p.id === id);
     return sum + (product?.monthly || 0);
   }, 0);
+
+  // ✨ NEW: Complete Purchase
+  const completePurchase = () => {
+    if (cartItems.length === 0) {
+      notify('장바구니가 비어있습니다', 'warning');
+      return;
+    }
+    
+    // Add to purchased products
+    setPurchasedProducts([...new Set([...purchasedProducts, ...cartItems])]);
+    
+    // Clear cart
+    setCartItems([]);
+    setShowCartModal(false);
+    
+    // Show success and open dashboard
+    notify(`🎉 구매 완료! ${cartTotal.toLocaleString()}원 결제되었습니다`, 'success');
+    
+    setTimeout(() => {
+      setShowDashboard(true);
+      notify('내 대시보드로 이동합니다', 'info');
+    }, 1500);
+  };
+
+  // ✨ NEW: Start Using Service
+  const startService = (productId: string) => {
+    setActiveService(productId);
+    setServiceProgress({ ...serviceProgress, [productId]: 0 });
+    notify('AI 서비스를 시작합니다...', 'info');
+    
+    // Initialize AI responses
+    if (!aiResponses[productId]) {
+      setAiResponses({ ...aiResponses, [productId]: [] });
+    }
+    
+    // Simulate AI initialization
+    setTimeout(() => {
+      addAiResponse(productId, {
+        type: 'welcome',
+        text: `안녕하세요! ${LAAS_PRODUCTS.find(p => p.id === productId)?.title} 서비스입니다. 무엇을 도와드릴까요?`,
+        timestamp: new Date().toISOString()
+      });
+    }, 1000);
+  };
+
+  // ✨ NEW: Add AI Response
+  const addAiResponse = (productId: string, response: any) => {
+    setAiResponses(prev => ({
+      ...prev,
+      [productId]: [...(prev[productId] || []), response]
+    }));
+    
+    // Update service progress
+    setServiceProgress(prev => ({
+      ...prev,
+      [productId]: Math.min((prev[productId] || 0) + 10, 100)
+    }));
+    
+    // Update user stats
+    setUserProfile(prev => ({
+      ...prev,
+      totalUsage: prev.totalUsage + 1,
+      level: Math.floor((prev.totalUsage + 1) / 10) + 1
+    }));
+  };
+
+  // ✨ NEW: Get AI Recommendation
+  const getAiRecommendation = (productId: string, userInput: string) => {
+    notify('AI가 분석 중입니다...', 'info');
+    
+    setTimeout(() => {
+      const product = LAAS_PRODUCTS.find(p => p.id === productId);
+      let recommendation = '';
+      
+      switch (productId) {
+        case 'fashion':
+          recommendation = `${userInput}님의 스타일에 맞는 추천: 네이비 블레이저 + 화이트 셔츠 조합이 좋겠네요. 오늘의 날씨를 고려하여 가벼운 스카프를 추가하는 것을 추천드립니다.`;
+          break;
+        case 'healthcare':
+          recommendation = `현재 목표에 맞춰 하루 30분 유산소 운동을 추천드립니다. 주 3회 근력 운동을 병행하면 더 효과적입니다. 수분 섭취는 하루 2L를 유지해주세요.`;
+          break;
+        case 'beauty':
+          recommendation = `피부 타입 분석 결과 보습 케어가 필요합니다. 아침: 세안 → 토너 → 에센스 → 선크림, 저녁: 클렌징 → 토너 → 세럼 → 크림 순서를 추천드립니다.`;
+          break;
+        case 'finance':
+          recommendation = `현재 시장 상황을 고려하여 주식 60%, 채권 30%, 현금 10% 비율의 포트폴리오를 추천합니다. 예상 연 수익률은 8-10%입니다.`;
+          break;
+        case 'travel':
+          recommendation = `${userInput} 여행 플랜: 1일차 도쿄 시내 관광, 2일차 후지산 투어, 3일차 오사카 이동. 총 예산 150만원 예상됩니다. 항공권은 지금 예약하면 20% 할인 가능합니다!`;
+          break;
+        case 'education':
+          recommendation = `커리어 로드맵: 1단계(0-6개월) 기초 프로그래밍 학습, 2단계(6-12개월) 프로젝트 경험 쌓기, 3단계(12-18개월) 포트폴리오 완성. 예상 연봉 상승: +50%`;
+          break;
+        default:
+          recommendation = '분석이 완료되었습니다.';
+      }
+      
+      addAiResponse(productId, {
+        type: 'recommendation',
+        text: recommendation,
+        timestamp: new Date().toISOString(),
+        userInput
+      });
+      
+      notify('AI 추천이 생성되었습니다! ✨', 'success');
+    }, 2000);
+  };
 
   // Open demo modal
   const openDemo = (productId: string) => {
@@ -607,6 +728,22 @@ export default function MyMapBotPage() {
               </span>
             )}
           </button>
+          
+          {/* Dashboard Icon (NEW) */}
+          {purchasedProducts.length > 0 && (
+            <button 
+              onClick={() => setShowDashboard(!showDashboard)}
+              className="relative ml-2 glass-card px-3 py-2 rounded-full hover:scale-105 transition-transform"
+              title="내 대시보드"
+            >
+              <span className="text-lg">👤</span>
+              {purchasedProducts.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-teal-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                  {purchasedProducts.length}
+                </span>
+              )}
+            </button>
+          )}
 
           <div className="flex items-center gap-1.5 bg-[#5de67a]/[0.08] border border-[#5de67a]/20
                           px-3 py-1.5 rounded-full text-[0.72rem] text-[#5de67a] font-semibold ml-2">
@@ -2059,6 +2196,385 @@ export default function MyMapBotPage() {
         <span className="absolute inset-0 rounded-full animate-pulse-ring" />
         💬
       </button>
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ✨ USER DASHBOARD & SERVICE USAGE MODAL (NEW)                        */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {showDashboard && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+             onClick={() => setShowDashboard(false)}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          
+          <div className="relative w-full max-w-6xl max-h-[90vh] overflow-y-auto glass-card rounded-3xl p-8"
+               onClick={(e) => e.stopPropagation()}>
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowDashboard(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 
+                         flex items-center justify-center text-2xl transition-all">
+              ✕
+            </button>
+
+            {/* Dashboard Header */}
+            <div className="mb-8">
+              <h2 className="text-4xl font-bold mb-2 gradient-text">
+                🎯 내 대시보드
+              </h2>
+              <p className="text-[#999] text-lg">
+                구매한 서비스를 관리하고 AI와 상호작용하세요
+              </p>
+            </div>
+
+            {/* User Profile Card */}
+            <div className="glass-card p-6 rounded-2xl mb-8 border border-white/10">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 
+                              flex items-center justify-center text-4xl">
+                  👤
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-1">{userProfile.name}</h3>
+                  <div className="flex items-center gap-4 text-sm text-[#999]">
+                    <span>🎖️ Level {userProfile.level}</span>
+                    <span>📅 가입일: {userProfile.joinDate}</span>
+                    <span>📊 총 사용: {userProfile.totalUsage}회</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-[#999] mb-1">구독 플랜</div>
+                  <div className="text-xl font-bold text-[#7c6ef5]">
+                    {PRICING_PLANS.find(p => p.id === userProfile.subscription)?.name || 'Starter'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Services Overview */}
+            {activeService ? (
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-2xl font-bold text-white">
+                    🔥 활성 서비스
+                  </h3>
+                  <button 
+                    onClick={() => setActiveService(null)}
+                    className="text-sm text-[#999] hover:text-white transition-colors">
+                    전체 보기 →
+                  </button>
+                </div>
+                
+                {/* Active Service Detail View */}
+                {(() => {
+                  const product = LAAS_PRODUCTS.find(p => p.id === activeService);
+                  if (!product) return null;
+                  
+                  return (
+                    <div className="glass-card p-6 rounded-2xl border border-white/10">
+                      {/* Service Header */}
+                      <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
+                        <div className="text-5xl">{product.icon}</div>
+                        <div className="flex-1">
+                          <h4 className="text-2xl font-bold text-white mb-1">{product.title}</h4>
+                          <p className="text-[#999]">{product.tagline}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-[#999] mb-1">진행률</div>
+                          <div className="text-3xl font-bold text-[#7c6ef5]">
+                            {serviceProgress[activeService] || 0}%
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="mb-6">
+                        <div className="h-3 bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-[#7c6ef5] to-[#e6a020] transition-all duration-500"
+                            style={{ width: `${serviceProgress[activeService] || 0}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* AI Chat Interface */}
+                      <div className="space-y-4 mb-6">
+                        <h5 className="text-lg font-bold text-white mb-3">💬 AI 대화</h5>
+                        
+                        {/* AI Messages */}
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {(aiResponses[activeService] || []).map((msg, idx) => (
+                            <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`max-w-[80%] p-4 rounded-2xl ${
+                                msg.type === 'user' 
+                                  ? 'bg-[#7c6ef5]/20 border border-[#7c6ef5]/30' 
+                                  : 'bg-white/5 border border-white/10'
+                              }`}>
+                                <p className="text-white text-sm leading-relaxed">{msg.text}</p>
+                                <div className="text-xs text-[#999] mt-2">
+                                  {new Date(msg.timestamp).toLocaleTimeString('ko-KR')}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* User Input */}
+                        <div className="flex gap-3">
+                          <input 
+                            type="text"
+                            placeholder="AI에게 질문하거나 요청하세요..."
+                            className="flex-1 input-field"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                const userInput = e.currentTarget.value.trim();
+                                
+                                // Add user message
+                                addAiResponse(activeService, {
+                                  type: 'user',
+                                  text: userInput,
+                                  timestamp: new Date().toISOString()
+                                });
+                                
+                                // Get AI recommendation
+                                getAiRecommendation(activeService, userInput);
+                                
+                                e.currentTarget.value = '';
+                              }
+                            }}
+                          />
+                          <button 
+                            onClick={(e) => {
+                              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                              if (input?.value.trim()) {
+                                const userInput = input.value.trim();
+                                addAiResponse(activeService, {
+                                  type: 'user',
+                                  text: userInput,
+                                  timestamp: new Date().toISOString()
+                                });
+                                getAiRecommendation(activeService, userInput);
+                                input.value = '';
+                              }
+                            }}
+                            className="btn-accent px-6">
+                            전송
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => {
+                            getAiRecommendation(activeService, '오늘의 추천을 보여주세요');
+                          }}
+                          className="btn-ghost flex-1">
+                          ⭐ 오늘의 추천
+                        </button>
+                        <button 
+                          onClick={() => {
+                            getAiRecommendation(activeService, '지난 기록을 분석해주세요');
+                          }}
+                          className="btn-ghost flex-1">
+                          📊 분석 보기
+                        </button>
+                        <button 
+                          onClick={() => {
+                            notify('설정 화면으로 이동합니다', 'info');
+                          }}
+                          className="btn-ghost flex-1">
+                          ⚙️ 설정
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            ) : (
+              /* Service Grid View */
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-6">
+                  📦 구매한 서비스 ({purchasedProducts.length})
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {purchasedProducts.map((productId, idx) => {
+                    const product = LAAS_PRODUCTS.find(p => p.id === productId);
+                    if (!product) return null;
+                    
+                    const progress = serviceProgress[productId] || 0;
+                    const responseCount = (aiResponses[productId] || []).length;
+                    
+                    return (
+                      <div 
+                        key={productId}
+                        className="glass-card p-6 rounded-2xl border border-white/10 hover:border-[#7c6ef5]/30 
+                                   transition-all hover:scale-105 cursor-pointer"
+                        style={{ animationDelay: `${idx * 0.1}s` }}
+                        onClick={() => startService(productId)}>
+                        
+                        {/* Product Icon & Title */}
+                        <div className="text-center mb-4">
+                          <div className="text-5xl mb-3">{product.icon}</div>
+                          <h4 className="text-lg font-bold text-white mb-1">{product.title}</h4>
+                          <p className="text-sm text-[#999]">{product.category}</p>
+                        </div>
+
+                        {/* Progress */}
+                        <div className="mb-4">
+                          <div className="flex justify-between text-xs text-[#999] mb-2">
+                            <span>진행률</span>
+                            <span>{progress}%</span>
+                          </div>
+                          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-gradient-to-r from-[#7c6ef5] to-[#e6a020]"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="flex justify-between text-sm mb-4">
+                          <div className="text-[#999]">
+                            💬 대화: <span className="text-white font-bold">{responseCount}</span>
+                          </div>
+                          <div className="text-[#999]">
+                            ⏱️ 사용: <span className="text-white font-bold">
+                              {Math.floor(Math.random() * 10) + 1}일
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* CTA Button */}
+                        <button className="btn-accent w-full py-3 text-sm">
+                          {progress === 0 ? '시작하기' : '계속하기'} →
+                        </button>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Add More Service Card */}
+                  <div 
+                    className="glass-card p-6 rounded-2xl border border-dashed border-white/20 
+                               hover:border-[#7c6ef5]/50 transition-all cursor-pointer
+                               flex flex-col items-center justify-center text-center"
+                    onClick={() => {
+                      setShowDashboard(false);
+                      const laasSection = document.getElementById('laas');
+                      if (laasSection) {
+                        laasSection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}>
+                    <div className="text-5xl mb-3">➕</div>
+                    <h4 className="text-lg font-bold text-white mb-1">새 서비스 추가</h4>
+                    <p className="text-sm text-[#999] mb-4">더 많은 AI 서비스를 구독하세요</p>
+                    <button className="btn-ghost px-6 py-2 text-sm">
+                      둘러보기 →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {purchasedProducts.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🎁</div>
+                <h3 className="text-2xl font-bold text-white mb-2">아직 구매한 서비스가 없습니다</h3>
+                <p className="text-[#999] mb-6">LaaS Shop에서 원하는 AI 서비스를 구독해보세요!</p>
+                <button 
+                  onClick={() => {
+                    setShowDashboard(false);
+                    const laasSection = document.getElementById('laas');
+                    if (laasSection) {
+                      laasSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="btn-accent px-8 py-3">
+                  LaaS Shop 둘러보기 →
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* CART MODAL — Update with Purchase Button                            */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {showCartModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4"
+             onClick={() => setShowCartModal(false)}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          
+          <div className="relative w-full max-w-2xl glass-card rounded-3xl p-8"
+               onClick={(e) => e.stopPropagation()}>
+            
+            <button 
+              onClick={() => setShowCartModal(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 
+                         flex items-center justify-center text-2xl transition-all">
+              ✕
+            </button>
+
+            <h2 className="text-3xl font-bold mb-6 gradient-text">🛒 장바구니</h2>
+
+            {cartItems.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🛒</div>
+                <p className="text-[#999] text-lg">장바구니가 비어있습니다</p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  {cartItems.map((id) => {
+                    const product = LAAS_PRODUCTS.find(p => p.id === id);
+                    if (!product) return null;
+                    
+                    return (
+                      <div key={id} className="flex items-center gap-4 glass-card p-4 rounded-xl">
+                        <div className="text-4xl">{product.icon}</div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white">{product.title}</h4>
+                          <p className="text-sm text-[#999]">{product.category}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xl font-bold text-[#7c6ef5]">
+                            {(product.monthly / 1000).toFixed(1)}만원<span className="text-sm text-[#999]">/월</span>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => removeFromCart(id)}
+                          className="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500/30 
+                                     flex items-center justify-center text-red-400 transition-all">
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="border-t border-white/10 pt-4 mb-6">
+                  <div className="flex justify-between items-center text-xl">
+                    <span className="text-[#999]">총 결제 금액</span>
+                    <span className="text-3xl font-bold text-white">
+                      {cartTotal.toLocaleString()}원<span className="text-lg text-[#999]">/월</span>
+                    </span>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={completePurchase}
+                  className="btn-accent w-full py-4 text-lg font-bold">
+                  💳 {cartTotal.toLocaleString()}원 결제하기
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
