@@ -98,6 +98,10 @@ export default function MapBotPage() {
   const [notification, setNotification] = useState<{ msg: string; type: string } | null>(null);
   const [step, setStep] = useState(1);
   const [bookingModal, setBookingModal] = useState<{ open: boolean; data: Record<string, string> }>({ open: false, data: {} });
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{ role: 'user' | 'ai'; text: string }>>([
+    { role: 'ai', text: '안녕하세요! 🤖 MapBot AI 어시스턴트입니다. 어떤 도움이 필요하신가요?' }
+  ]);
 
   // Init Firebase Auth
   useEffect(() => {
@@ -227,24 +231,29 @@ export default function MapBotPage() {
 
       {/* ── HERO ── */}
       <section className="relative min-h-[60vh] flex flex-col items-center justify-center text-center
-                           px-8 pt-28 pb-16 overflow-hidden">
+                           px-8 pt-28 pb-16 overflow-hidden mesh-gradient">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px]
-                        rounded-full pointer-events-none"
-             style={{ background: 'radial-gradient(ellipse, rgba(124,110,245,0.14) 0%, rgba(93,230,208,0.05) 45%, transparent 70%)' }} />
-        <div className="text-[#7c6ef5] text-xs font-bold tracking-[0.3em] uppercase mb-5">
+                        rounded-full pointer-events-none glow-purple animate-pulse"
+             style={{ background: 'radial-gradient(ellipse, rgba(124,110,245,0.2) 0%, rgba(93,230,208,0.08) 45%, transparent 70%)' }} />
+        
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-[10%] w-20 h-20 rounded-full bg-[#7c6ef5]/10 blur-xl animate-float" />
+        <div className="absolute bottom-20 right-[15%] w-32 h-32 rounded-full bg-[#5de6d0]/10 blur-xl animate-float" style={{ animationDelay: '1s' }} />
+        
+        <div className="text-[#7c6ef5] text-xs font-bold tracking-[0.3em] uppercase mb-5 animate-fade-in">
           ✦ Mobility AI Agent · MaaS · LaaS
         </div>
-        <h1 className="font-serif text-4xl md:text-5xl font-light leading-tight mb-6">
+        <h1 className="font-serif text-4xl md:text-5xl font-light leading-tight mb-6 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           당신의 일상을<br />
-          <strong className="font-semibold" style={{ background: 'linear-gradient(135deg,#7c6ef5,#5de6d0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          <strong className="font-semibold gradient-text">
             서비스로 누리세요
           </strong>
         </h1>
-        <p className="text-[#888899] text-base max-w-xl leading-relaxed mb-8">
+        <p className="text-[#888899] text-base max-w-xl leading-relaxed mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
           카카오맵 + 실시간 대중교통 + DRT 배차<br />
           이동·숙박·패션·헬스케어·미용·투자까지
         </p>
-        <div className="flex gap-4 flex-wrap justify-center">
+        <div className="flex gap-4 flex-wrap justify-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
           <button className="btn-accent" onClick={() => { setActiveTab('mobility'); window.scrollTo({ top: 600, behavior: 'smooth' }); }}>
             지금 시작하기 →
           </button>
@@ -253,9 +262,10 @@ export default function MapBotPage() {
           </button>
         </div>
         <div className="flex gap-8 mt-12 flex-wrap justify-center">
-          {[['128', '운행 차량'], ['1,240', '일 이용건'], ['12', '연계 도시'], ['4.9', '만족도']].map(([n, l]) => (
-            <div key={l} className="text-center">
-              <span className="font-serif text-2xl font-medium text-[#7c6ef5] block">{n}</span>
+          {[['128', '운행 차량', '🚗'], ['1,240', '일 이용건', '📈'], ['12', '연계 도시', '🌐'], ['4.9', '만족도', '⭐']].map(([n, l, icon], i) => (
+            <div key={l} className="text-center glass-card px-6 py-4 rounded-xl hover:scale-105 transition-transform duration-300 animate-fade-in" style={{ animationDelay: `${0.4 + i * 0.1}s` }}>
+              <div className="text-xl mb-1">{icon}</div>
+              <span className="font-serif text-2xl font-medium gradient-text block">{n}</span>
               <span className="text-xs text-[#888899] uppercase tracking-widest">{l}</span>
             </div>
           ))}
@@ -299,7 +309,7 @@ export default function MapBotPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Form */}
               <div>
-                <div className="card mb-5">
+                <div className="card-3d mb-5">
                   <div className="font-serif text-xl mb-5">🗺️ 이동 여정 검색
                     <span className="font-sans text-xs text-[#888899] font-normal ml-2">카카오맵 · ODsay 연동</span>
                   </div>
@@ -415,7 +425,7 @@ export default function MapBotPage() {
           <div className="animate-[fadeIn_0.35s_ease]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               <div>
-                <div className="card">
+                <div className="card-3d">
                   <div className="font-serif text-xl mb-5">🚗 실시간 Fleet 현황
                     <span className="font-sans text-xs text-[#5de67a] font-normal ml-2">● 실시간 SSE</span>
                   </div>
@@ -484,7 +494,7 @@ export default function MapBotPage() {
         {activeTab === 'drt' && (
           <div className="animate-[fadeIn_0.35s_ease]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="card">
+              <div className="card-3d">
                 <div className="font-serif text-xl mb-5">⚡ DRT 동적 배차
                   <span className="font-sans text-xs text-[#888899] font-normal ml-2">AI 할당 엔진</span>
                 </div>
@@ -554,7 +564,7 @@ export default function MapBotPage() {
               </div>
 
               <div>
-                <div className="card mb-5">
+                <div className="card-3d mb-5">
                   <div className="font-serif text-xl mb-4">🔄 동적 라우팅 알고리즘</div>
                   <div className="space-y-3 text-sm">
                     {[
@@ -588,7 +598,7 @@ export default function MapBotPage() {
         {activeTab === 'pricing' && (
           <div className="animate-[fadeIn_0.35s_ease]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="card">
+              <div className="card-3d">
                 <div className="font-serif text-xl mb-5">💎 동적 요금 계산
                   <span className="font-sans text-xs text-[#888899] font-normal ml-2">MU Point 적용</span>
                 </div>
@@ -640,7 +650,7 @@ export default function MapBotPage() {
               </div>
 
               <div>
-                <div className="card mb-5">
+                <div className="card-3d mb-5">
                   <div className="font-serif text-xl mb-4">⭐ MU Point 현황</div>
                   <div className="text-3xl font-bold text-[#5de6d0] mb-5">{muPoints.toLocaleString()} P</div>
                   <div className="space-y-1">
@@ -660,7 +670,7 @@ export default function MapBotPage() {
                     ))}
                   </div>
                 </div>
-                <div className="card">
+                <div className="card-3d">
                   <div className="font-serif text-xl mb-4">💳 결제 수단</div>
                   <div className="space-y-2.5">
                     {[['💳 신용카드', 'card'], ['📱 카카오페이', 'kakao'], ['⭐ MU Point 전액', 'mu'], ['🏢 법인카드', 'corp']].map(([l, v]) => (
@@ -680,7 +690,7 @@ export default function MapBotPage() {
         {activeTab === 'laas' && (
           <div className="animate-[fadeIn_0.35s_ease]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-              <div className="card">
+              <div className="card-3d">
                 <div className="font-serif text-xl mb-5">🤖 나만의 LaaS AI 에이전트
                   <span className="font-sans text-xs text-[#888899] font-normal ml-2">Life as a Service</span>
                 </div>
@@ -835,7 +845,7 @@ function AdminPanel({ vehicles }: { vehicles: Vehicle[] }) {
     <div className="animate-[fadeIn_0.35s_ease]">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div>
-          <div className="card">
+          <div className="card-3d">
             <div className="font-serif text-xl mb-4">📊 수요 히트맵
               <span className="font-sans text-xs text-[#888899] font-normal ml-2">포항시 기준</span>
             </div>
@@ -856,7 +866,7 @@ function AdminPanel({ vehicles }: { vehicles: Vehicle[] }) {
           </div>
         </div>
         <div>
-          <div className="card mb-5">
+          <div className="card-3d mb-5">
             <div className="font-serif text-xl mb-4">⚙️ 운영 지표</div>
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -876,7 +886,7 @@ function AdminPanel({ vehicles }: { vehicles: Vehicle[] }) {
               ))}
             </div>
           </div>
-          <div className="card">
+          <div className="card-3d">
             <div className="font-serif text-xl mb-4">🏙️ 기업 정책 준수 현황</div>
             <div className="space-y-2">
               {[
@@ -899,6 +909,124 @@ function AdminPanel({ vehicles }: { vehicles: Vehicle[] }) {
           </div>
         </div>
       </div>
+
+      {/* ══ AI CHATBOT FAB & PANEL ══ */}
+      <div className="fixed bottom-6 right-6 z-50">
+        {/* Chat Panel */}
+        {chatOpen && (
+          <div className="absolute bottom-20 right-0 w-96 h-[500px] 
+                          glass-card rounded-2xl
+                          flex flex-col overflow-hidden
+                          animate-scale-in shadow-2xl">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#7c6ef5] to-[#5de6d0] p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xl">
+                  🤖
+                </div>
+                <div>
+                  <div className="font-semibold text-white text-sm">MapBot AI</div>
+                  <div className="text-xs text-white/70">실시간 응답 가능</div>
+                </div>
+              </div>
+              <button 
+                onClick={() => setChatOpen(false)}
+                className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 
+                          flex items-center justify-center transition-colors">
+                ✕
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm ${
+                    msg.role === 'user'
+                      ? 'bg-gradient-to-br from-[#7c6ef5] to-[#9b8ff8] text-white'
+                      : 'bg-white/[0.08] text-[#e8e8f0] border border-white/[0.1]'
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Input */}
+            <div className="p-4 border-t border-white/[0.1]">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="메시지를 입력하세요..."
+                  className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-xl 
+                            px-4 py-2.5 text-sm text-[#e8e8f0]
+                            focus:border-[#7c6ef5] focus:outline-none focus:ring-2 focus:ring-[#7c6ef5]/20"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                      const userMsg = e.currentTarget.value.trim();
+                      setChatMessages([...chatMessages, 
+                        { role: 'user', text: userMsg },
+                        { role: 'ai', text: `"${userMsg}"에 대한 답변을 준비 중입니다... 🔍` }
+                      ]);
+                      e.currentTarget.value = '';
+                    }
+                  }}
+                />
+                <button className="btn-accent btn-sm px-4">
+                  전송
+                </button>
+              </div>
+              <div className="flex gap-2 mt-2">
+                <button 
+                  className="text-xs px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.08] 
+                            text-[#888899] hover:text-[#e8e8f0] transition-colors"
+                  onClick={() => setChatMessages([...chatMessages, 
+                    { role: 'user', text: '가장 빠른 경로 추천해줘' },
+                    { role: 'ai', text: '포항역에서 포항공항까지 DRT 배차로 약 25분 소요됩니다. 지금 바로 예약하시겠어요?' }
+                  ])}>
+                  💬 빠른 경로
+                </button>
+                <button 
+                  className="text-xs px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.08] 
+                            text-[#888899] hover:text-[#e8e8f0] transition-colors"
+                  onClick={() => setChatMessages([...chatMessages, 
+                    { role: 'user', text: '포인트 사용법 알려줘' },
+                    { role: 'ai', text: '현재 500 MU Point를 보유 중이십니다. 결제 시 1P = 1원으로 자동 차감됩니다! 💎' }
+                  ])}>
+                  💎 포인트 안내
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FAB Button */}
+        <button 
+          onClick={() => setChatOpen(!chatOpen)}
+          className="chat-fab relative"
+          title="AI 어시스턴트">
+          🤖
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#5de67a] rounded-full 
+                          border-2 border-[#0a0a0f] pulse-ring" />
+        </button>
+      </div>
+
+      {/* ══ NOTIFICATION TOAST ══ */}
+      {notification && (
+        <div className={`fixed top-24 right-6 z-50 
+                        glass-card px-6 py-4 rounded-xl
+                        animate-slide-in shadow-2xl
+                        ${notification.type === 'error' ? 'border-[#f55e5e]/40' : 'border-[#5de67a]/40'}`}>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">
+              {notification.type === 'error' ? '⚠️' : '✅'}
+            </span>
+            <span className="text-sm font-medium text-[#e8e8f0]">
+              {notification.msg}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
