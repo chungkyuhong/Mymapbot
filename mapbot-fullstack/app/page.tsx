@@ -478,46 +478,292 @@ export default function MyMapBotPage() {
     }));
   };
 
-  // ✨ NEW: Get AI Recommendation
+  // ✨ ENHANCED: Get AI Recommendation with Rich Data
   const getAiRecommendation = (productId: string, userInput: string) => {
-    notify('AI가 분석 중입니다...', 'info');
+    notify('AI가 심층 분석 중입니다...', 'info');
     
     setTimeout(() => {
       const product = LAAS_PRODUCTS.find(p => p.id === productId);
-      let recommendation = '';
+      let recommendation: any = {};
       
       switch (productId) {
         case 'fashion':
-          recommendation = `${userInput}님의 스타일에 맞는 추천: 네이비 블레이저 + 화이트 셔츠 조합이 좋겠네요. 오늘의 날씨를 고려하여 가벼운 스카프를 추가하는 것을 추천드립니다.`;
+          // 실제 쇼핑 데이터와 유사한 추천
+          const fashionItems = [
+            { name: '슬림핏 청바지', brand: 'Levi\'s 501', price: 89000, link: '#', image: '👖', match: 95, discount: 15 },
+            { name: '캐주얼 니트', brand: 'Uniqlo Cashmere', price: 59000, link: '#', image: '👔', match: 92, discount: 20 },
+            { name: '스니커즈', brand: 'Nike Air Force 1', price: 129000, link: '#', image: '👟', match: 88, discount: 10 },
+            { name: '크로스백', brand: 'Coach Signature', price: 198000, link: '#', image: '👜', match: 85, discount: 25 }
+          ];
+          
+          recommendation = {
+            type: 'fashion_recommendation',
+            text: `"${userInput}" 스타일 분석 완료! 총 ${fashionItems.length}개 아이템을 큐레이션했습니다.`,
+            items: fashionItems,
+            totalSavings: fashionItems.reduce((sum, item) => sum + (item.price * item.discount / 100), 0),
+            styleScore: 94,
+            seasonTip: '봄/가을 시즌에 최적화된 레이어링 스타일입니다',
+            colorPalette: ['#2C3E50', '#34495E', '#7F8C8D', '#ECF0F1'],
+            wardrobeCompletion: 73
+          };
           break;
+          
         case 'healthcare':
-          recommendation = `현재 목표에 맞춰 하루 30분 유산소 운동을 추천드립니다. 주 3회 근력 운동을 병행하면 더 효과적입니다. 수분 섭취는 하루 2L를 유지해주세요.`;
+          // 실제 헬스 트래커 수준의 데이터
+          const weeklyPlan = [
+            { day: '월', exercises: ['런닝 5km', '상체 근력'], calories: 550, duration: 75 },
+            { day: '화', exercises: ['요가', '스트레칭'], calories: 200, duration: 45 },
+            { day: '수', exercises: ['사이클링 30분', '코어 운동'], calories: 450, duration: 60 },
+            { day: '목', exercises: ['휴식일'], calories: 0, duration: 0 },
+            { day: '금', exercises: ['수영 1km', '하체 근력'], calories: 600, duration: 80 },
+            { day: '토', exercises: ['등산 2시간'], calories: 700, duration: 120 },
+            { day: '일', exercises: ['휴식일', '가벼운 산책'], calories: 150, duration: 30 }
+          ];
+          
+          recommendation = {
+            type: 'health_plan',
+            text: `"${userInput}" 목표 달성을 위한 맞춤 플랜이 생성되었습니다!`,
+            weeklyPlan,
+            totalCalories: weeklyPlan.reduce((sum, day) => sum + day.calories, 0),
+            avgDaily: Math.round(weeklyPlan.reduce((sum, day) => sum + day.calories, 0) / 7),
+            nutrition: {
+              breakfast: { name: '오트밀+바나나', calories: 350, protein: 12 },
+              lunch: { name: '닭가슴살 샐러드', calories: 450, protein: 35 },
+              dinner: { name: '연어 구이+현미밥', calories: 550, protein: 40 },
+              snack: { name: '그릭요거트+견과류', calories: 200, protein: 15 }
+            },
+            waterGoal: '2.5L',
+            sleepTarget: '7-8시간',
+            progressPrediction: '4주 후 -3.5kg 예상',
+            currentBMI: 24.2,
+            targetBMI: 22.8
+          };
           break;
+          
         case 'beauty':
-          recommendation = `피부 타입 분석 결과 보습 케어가 필요합니다. 아침: 세안 → 토너 → 에센스 → 선크림, 저녁: 클렌징 → 토너 → 세럼 → 크림 순서를 추천드립니다.`;
+          // 실제 피부 진단 앱 수준의 분석
+          recommendation = {
+            type: 'beauty_analysis',
+            text: `"${userInput}" 피부 타입에 맞는 전문 루틴을 제안합니다.`,
+            skinScore: {
+              moisture: 68,
+              elasticity: 72,
+              pores: 65,
+              brightness: 78,
+              overall: 71
+            },
+            morningRoutine: [
+              { step: 1, name: '저자극 클렌저', product: 'Cetaphil Gentle', price: 18000, time: '1분' },
+              { step: 2, name: '비타민C 세럼', product: 'Klairs Vitamin Drop', price: 25000, time: '2분' },
+              { step: 3, name: '보습 크림', product: 'Etude House 2X', price: 15000, time: '1분' },
+              { step: 4, name: 'SPF50+ 선크림', product: 'Biore UV Aqua', price: 12000, time: '1분' }
+            ],
+            eveningRoutine: [
+              { step: 1, name: '딥 클렌징 오일', product: 'DHC Deep Cleansing', price: 28000, time: '2분' },
+              { step: 2, name: '각질 제거 토너', product: 'COSRX AHA/BHA', price: 18000, time: '1분' },
+              { step: 3, name: '나이아신아마이드 세럼', product: 'The Ordinary 10%', price: 8000, time: '2분' },
+              { step: 4, name: '재생 크림', product: 'CeraVe PM Lotion', price: 22000, time: '1분' }
+            ],
+            weeklyTreatment: '각질 제거 (수요일), 시트마스크 (금요일)',
+            avoidIngredients: ['알코올', '인공향료', 'SLS'],
+            recommendIngredients: ['히알루론산', '세라마이드', '나이아신아마이드'],
+            improveIn: '4주 후 피부 점수 +15점 예상'
+          };
           break;
+          
         case 'finance':
-          recommendation = `현재 시장 상황을 고려하여 주식 60%, 채권 30%, 현금 10% 비율의 포트폴리오를 추천합니다. 예상 연 수익률은 8-10%입니다.`;
+          // 실제 로보어드바이저 수준의 포트폴리오
+          const portfolio = [
+            { asset: 'KODEX 200 ETF', allocation: 35, amount: 3500000, return1y: 8.2, risk: '중' },
+            { asset: '미국 S&P500 ETF', allocation: 25, amount: 2500000, return1y: 12.5, risk: '중상' },
+            { asset: '채권형 ETF', allocation: 20, amount: 2000000, return1y: 4.1, risk: '하' },
+            { asset: '리츠 ETF', allocation: 10, amount: 1000000, return1y: 6.8, risk: '중' },
+            { asset: '현금성 자산', allocation: 10, amount: 1000000, return1y: 3.5, risk: '최하' }
+          ];
+          
+          recommendation = {
+            type: 'investment_plan',
+            text: `"${userInput}" 성향에 맞는 포트폴리오를 구성했습니다.`,
+            portfolio,
+            totalInvestment: portfolio.reduce((sum, item) => sum + item.amount, 0),
+            expectedReturn1y: 8.4,
+            expectedReturn3y: 27.8,
+            expectedReturn5y: 52.1,
+            riskScore: 45,
+            volatility: '±12%',
+            monthlyDCA: 500000,
+            taxBenefit: '연 150만원 절세 가능 (ISA 계좌)',
+            rebalancingSchedule: '분기별 (3, 6, 9, 12월)',
+            marketAnalysis: {
+              outlook: '중립적 상승',
+              opportunities: ['미국 빅테크', '국내 배당주', '신흥국 채권'],
+              risks: ['금리 변동성', '환율 리스크', '지정학적 리스크']
+            },
+            backtest3y: '+34.2% (2022-2025)'
+          };
           break;
+          
         case 'travel':
-          recommendation = `${userInput} 여행 플랜: 1일차 도쿄 시내 관광, 2일차 후지산 투어, 3일차 오사카 이동. 총 예산 150만원 예상됩니다. 항공권은 지금 예약하면 20% 할인 가능합니다!`;
+          // 실제 여행 플래너 앱 수준의 일정
+          const itinerary = [
+            {
+              day: 1,
+              date: '2025-03-15 (토)',
+              activities: [
+                { time: '09:00', name: '인천공항 출발', location: 'ICN → NRT', cost: 450000, icon: '✈️' },
+                { time: '13:00', name: '도쿄 도착 & 호텔 체크인', location: '시부야 하얏트', cost: 180000, icon: '🏨' },
+                { time: '16:00', name: '시부야 스크램블 교차로', location: '시부야구', cost: 0, icon: '📸' },
+                { time: '19:00', name: '저녁 식사', location: '이치란 라멘', cost: 25000, icon: '🍜' }
+              ],
+              totalCost: 655000
+            },
+            {
+              day: 2,
+              date: '2025-03-16 (일)',
+              activities: [
+                { time: '08:00', name: '후지산 투어', location: '가와구치코', cost: 85000, icon: '🗻' },
+                { time: '13:00', name: '점심 (혼토)', location: '후지 5합목', cost: 18000, icon: '🍱' },
+                { time: '17:00', name: '온천 체험', location: '후지야마 온천', cost: 35000, icon: '♨️' },
+                { time: '20:00', name: '호텔 복귀', location: '시부야', cost: 0, icon: '🚌' }
+              ],
+              totalCost: 138000
+            },
+            {
+              day: 3,
+              date: '2025-03-17 (월)',
+              activities: [
+                { time: '09:00', name: '츠키지 수산시장', location: '츄오구', cost: 45000, icon: '🐟' },
+                { time: '12:00', name: '센소지 & 아사쿠사', location: '타이토구', cost: 5000, icon: '⛩️' },
+                { time: '15:00', name: '쇼핑 (하라주쿠)', location: '시부야구', cost: 120000, icon: '🛍️' },
+                { time: '18:00', name: '저녁 & 공항', location: 'NRT', cost: 35000, icon: '✈️' }
+              ],
+              totalCost: 205000
+            }
+          ];
+          
+          recommendation = {
+            type: 'travel_plan',
+            text: `"${userInput}" 여행 맞춤 플랜이 완성되었습니다!`,
+            itinerary,
+            totalBudget: itinerary.reduce((sum, day) => sum + day.totalCost, 0),
+            breakdown: {
+              flight: 450000,
+              accommodation: 360000,
+              food: 123000,
+              activities: 125000,
+              shopping: 120000,
+              transport: 20000
+            },
+            savingTips: [
+              '항공권 지금 예약 시 18% 할인 (₩82,000 절약)',
+              '호텔 조식 포함 패키지 선택 (₩45,000 절약)',
+              'JR Pass 3일권 구매 (₩35,000 절약)'
+            ],
+            totalSavings: 162000,
+            weather: ['맑음 16°C', '구름 14°C', '맑음 17°C'],
+            localTips: '3월은 벚꽃 시즌 시작, 주말 혼잡 예상',
+            packlist: ['여권', '엔화 현금 5만엔', '포켓와이파이', '우산', '편한 신발']
+          };
           break;
+          
         case 'education':
-          recommendation = `커리어 로드맵: 1단계(0-6개월) 기초 프로그래밍 학습, 2단계(6-12개월) 프로젝트 경험 쌓기, 3단계(12-18개월) 포트폴리오 완성. 예상 연봉 상승: +50%`;
+          // 실제 커리어 코칭 수준의 로드맵
+          const roadmap = [
+            {
+              phase: 1,
+              title: '기초 역량 구축',
+              period: '0-3개월',
+              milestones: [
+                { task: 'HTML/CSS/JS 마스터', hours: 120, completed: false },
+                { task: 'React 기초 학습', hours: 80, completed: false },
+                { task: '미니 프로젝트 3개', hours: 60, completed: false }
+              ],
+              skills: ['JavaScript', 'React', 'Git', 'REST API'],
+              salary: 0
+            },
+            {
+              phase: 2,
+              title: '실전 프로젝트 경험',
+              period: '3-6개월',
+              milestones: [
+                { task: 'Next.js 풀스택 프로젝트', hours: 150, completed: false },
+                { task: 'TypeScript 전환', hours: 40, completed: false },
+                { task: '포트폴리오 사이트 제작', hours: 50, completed: false }
+              ],
+              skills: ['Next.js', 'TypeScript', 'Node.js', 'MongoDB'],
+              salary: 3500000
+            },
+            {
+              phase: 3,
+              title: '취업 준비 & 면접',
+              period: '6-9개월',
+              milestones: [
+                { task: '이력서 최적화', hours: 10, completed: false },
+                { task: '알고리즘 문제 100제', hours: 80, completed: false },
+                { task: '모의 면접 10회', hours: 20, completed: false }
+              ],
+              skills: ['자료구조', '알고리즘', '시스템 디자인', '면접 스킬'],
+              salary: 4200000
+            }
+          ];
+          
+          recommendation = {
+            type: 'career_roadmap',
+            text: `"${userInput}" 분야 커리어 로드맵을 설계했습니다!`,
+            roadmap,
+            totalHours: roadmap.reduce((sum, phase) => 
+              sum + phase.milestones.reduce((s, m) => s + m.hours, 0), 0),
+            targetSalary: 4200000,
+            salaryIncrease: '+120%',
+            marketDemand: '매우 높음 (채용공고 1,234개)',
+            topCompanies: ['카카오', '네이버', '쿠팡', '당근마켓', '토스'],
+            interviewPrep: {
+              technicalQuestions: [
+                'React의 렌더링 최적화 방법은?',
+                'REST API vs GraphQL 차이점',
+                'Next.js SSR vs SSG 선택 기준',
+                'TypeScript 제네릭 활용법',
+                'Redux vs Zustand 상태관리 비교'
+              ],
+              behavioralQuestions: [
+                '가장 어려웠던 프로젝트는?',
+                '팀 충돌 해결 경험',
+                '실패에서 배운 점',
+                '5년 후 커리어 목표'
+              ]
+            },
+            resumeTips: [
+              '프로젝트 성과를 수치로 표현 (방문자 +300% 등)',
+              '기술 스택은 우선순위 순으로 나열',
+              'GitHub 링크 필수 포함',
+              '1페이지로 압축 (2페이지 절대 금지)'
+            ],
+            salaryNegotiation: {
+              initial: 3800000,
+              target: 4200000,
+              minimum: 3500000,
+              strategy: '경력과 프로젝트 성과를 근거로 target 제시 → 복지 혜택도 협상 포인트'
+            }
+          };
           break;
+          
         default:
-          recommendation = '분석이 완료되었습니다.';
+          recommendation = {
+            type: 'general',
+            text: '분석이 완료되었습니다.'
+          };
       }
       
       addAiResponse(productId, {
         type: 'recommendation',
-        text: recommendation,
+        text: recommendation.text || recommendation,
+        data: recommendation,
         timestamp: new Date().toISOString(),
         userInput
       });
       
-      notify('AI 추천이 생성되었습니다! ✨', 'success');
-    }, 2000);
+      notify('✨ 심층 분석 결과가 도착했습니다!', 'success');
+    }, 2500);
   };
 
   // Open demo modal
@@ -2300,17 +2546,271 @@ export default function MyMapBotPage() {
                       <div className="space-y-4 mb-6">
                         <h5 className="text-lg font-bold text-white mb-3">💬 AI 대화</h5>
                         
-                        {/* AI Messages */}
-                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {/* AI Messages - ENHANCED with Rich Data */}
+                        <div className="space-y-4 max-h-96 overflow-y-auto pr-2 scrollbar-thin">
                           {(aiResponses[activeService] || []).map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`max-w-[80%] p-4 rounded-2xl ${
+                              <div className={`${msg.type === 'user' ? 'max-w-[70%]' : 'max-w-[90%]'} p-4 rounded-2xl ${
                                 msg.type === 'user' 
                                   ? 'bg-[#7c6ef5]/20 border border-[#7c6ef5]/30' 
                                   : 'bg-white/5 border border-white/10'
                               }`}>
-                                <p className="text-white text-sm leading-relaxed">{msg.text}</p>
-                                <div className="text-xs text-[#999] mt-2">
+                                <p className="text-white text-sm leading-relaxed mb-2">{msg.text}</p>
+                                
+                                {/* Rich Data Visualization */}
+                                {msg.data && (() => {
+                                  const data = msg.data;
+                                  
+                                  // Fashion Recommendation
+                                  if (data.type === 'fashion_recommendation') {
+                                    return (
+                                      <div className="mt-4 space-y-3">
+                                        <div className="flex items-center justify-between text-xs">
+                                          <span className="text-teal-400">스타일 매칭 점수: {data.styleScore}/100</span>
+                                          <span className="text-[#999]">워드로브 완성도: {data.wardrobeCompletion}%</span>
+                                        </div>
+                                        
+                                        {data.items.map((item: any, i: number) => (
+                                          <div key={i} className="glass-card p-3 rounded-xl flex items-center gap-3 hover:border-[#7c6ef5]/30 transition-all">
+                                            <div className="text-3xl">{item.image}</div>
+                                            <div className="flex-1">
+                                              <div className="font-bold text-white text-sm">{item.name}</div>
+                                              <div className="text-xs text-[#999]">{item.brand}</div>
+                                            </div>
+                                            <div className="text-right">
+                                              <div className="text-[#7c6ef5] font-bold">₩{(item.price * (100 - item.discount) / 100).toLocaleString()}</div>
+                                              <div className="text-xs text-red-400 line-through">₩{item.price.toLocaleString()}</div>
+                                              <div className="text-xs text-teal-400">매칭 {item.match}%</div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                        
+                                        <div className="p-3 bg-teal-500/10 border border-teal-500/30 rounded-xl">
+                                          <div className="text-teal-400 text-xs font-bold mb-1">💰 총 절약 금액</div>
+                                          <div className="text-white text-lg font-bold">₩{data.totalSavings.toLocaleString()}</div>
+                                        </div>
+                                        
+                                        <div className="text-xs text-[#999] p-2 bg-white/5 rounded-lg">
+                                          💡 {data.seasonTip}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  // Health Plan
+                                  if (data.type === 'health_plan') {
+                                    return (
+                                      <div className="mt-4 space-y-3">
+                                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                                          <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                                            <div className="text-purple-400 mb-1">주간 소모</div>
+                                            <div className="text-white font-bold">{data.totalCalories.toLocaleString()} kcal</div>
+                                          </div>
+                                          <div className="p-2 bg-teal-500/10 border border-teal-500/30 rounded-lg">
+                                            <div className="text-teal-400 mb-1">하루 평균</div>
+                                            <div className="text-white font-bold">{data.avgDaily} kcal</div>
+                                          </div>
+                                          <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded-lg">
+                                            <div className="text-pink-400 mb-1">목표 BMI</div>
+                                            <div className="text-white font-bold">{data.targetBMI}</div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          {data.weeklyPlan.slice(0, 3).map((day: any, i: number) => (
+                                            <div key={i} className="glass-card p-2 rounded-lg flex items-center justify-between text-xs">
+                                              <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-[#7c6ef5]/20 flex items-center justify-center font-bold text-white">
+                                                  {day.day}
+                                                </div>
+                                                <div className="text-white">{day.exercises[0]}</div>
+                                              </div>
+                                              <div className="text-teal-400 font-bold">{day.calories}kcal</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        
+                                        <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl">
+                                          <div className="text-white text-sm font-bold mb-2">🎯 예상 성과</div>
+                                          <div className="text-teal-400 text-xs">{data.progressPrediction}</div>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  // Beauty Analysis
+                                  if (data.type === 'beauty_analysis') {
+                                    return (
+                                      <div className="mt-4 space-y-3">
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                          {Object.entries(data.skinScore).slice(0, 4).map(([key, value]: any, i) => (
+                                            <div key={i} className="p-2 bg-white/5 rounded-lg">
+                                              <div className="text-[#999] mb-1 capitalize">{key}</div>
+                                              <div className="flex items-center gap-2">
+                                                <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                                                  <div className="h-full bg-gradient-to-r from-[#7c6ef5] to-[#e6a020]" style={{width: `${value}%`}} />
+                                                </div>
+                                                <span className="text-white font-bold">{value}</span>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <div className="text-white text-xs font-bold">🌅 모닝 루틴</div>
+                                          {data.morningRoutine.map((step: any, i: number) => (
+                                            <div key={i} className="flex items-center gap-2 text-xs p-2 bg-white/5 rounded-lg">
+                                              <div className="w-6 h-6 rounded-full bg-[#7c6ef5]/20 flex items-center justify-center font-bold text-white">
+                                                {step.step}
+                                              </div>
+                                              <div className="flex-1">
+                                                <div className="text-white">{step.name}</div>
+                                                <div className="text-[#999]">{step.product}</div>
+                                              </div>
+                                              <div className="text-teal-400 font-bold">₩{step.price.toLocaleString()}</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        
+                                        <div className="text-xs p-2 bg-teal-500/10 border border-teal-500/30 rounded-lg text-teal-400">
+                                          ✨ {data.improveIn}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  // Investment Plan
+                                  if (data.type === 'investment_plan') {
+                                    return (
+                                      <div className="mt-4 space-y-3">
+                                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                                          <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                                            <div className="text-blue-400 mb-1">1년 수익률</div>
+                                            <div className="text-white font-bold">+{data.expectedReturn1y}%</div>
+                                          </div>
+                                          <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                                            <div className="text-purple-400 mb-1">3년 수익률</div>
+                                            <div className="text-white font-bold">+{data.expectedReturn3y}%</div>
+                                          </div>
+                                          <div className="p-2 bg-teal-500/10 border border-teal-500/30 rounded-lg">
+                                            <div className="text-teal-400 mb-1">리스크</div>
+                                            <div className="text-white font-bold">{data.riskScore}</div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          {data.portfolio.map((asset: any, i: number) => (
+                                            <div key={i} className="glass-card p-2 rounded-lg">
+                                              <div className="flex items-center justify-between text-xs mb-1">
+                                                <span className="text-white font-bold">{asset.asset}</span>
+                                                <span className="text-teal-400">{asset.allocation}%</span>
+                                              </div>
+                                              <div className="flex items-center justify-between text-xs text-[#999]">
+                                                <span>₩{asset.amount.toLocaleString()}</span>
+                                                <span className="text-green-400">+{asset.return1y}%</span>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                        
+                                        <div className="p-3 bg-gradient-to-r from-blue-500/10 to-teal-500/10 border border-blue-500/30 rounded-xl text-xs">
+                                          <div className="text-white font-bold mb-1">💡 절세 혜택</div>
+                                          <div className="text-teal-400">{data.taxBenefit}</div>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  // Travel Plan
+                                  if (data.type === 'travel_plan') {
+                                    return (
+                                      <div className="mt-4 space-y-3">
+                                        <div className="p-3 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/30 rounded-xl text-center">
+                                          <div className="text-[#999] text-xs mb-1">총 여행 경비</div>
+                                          <div className="text-white text-2xl font-bold">₩{data.totalBudget.toLocaleString()}</div>
+                                          <div className="text-teal-400 text-xs mt-1">절약 가능: ₩{data.totalSavings.toLocaleString()}</div>
+                                        </div>
+                                        
+                                        {data.itinerary.map((day: any, i: number) => (
+                                          <div key={i} className="glass-card p-3 rounded-xl">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <div className="text-white font-bold text-sm">Day {day.day}</div>
+                                              <div className="text-teal-400 text-xs">₩{day.totalCost.toLocaleString()}</div>
+                                            </div>
+                                            <div className="space-y-1">
+                                              {day.activities.slice(0, 2).map((act: any, j: number) => (
+                                                <div key={j} className="flex items-center gap-2 text-xs text-[#999]">
+                                                  <span>{act.icon}</span>
+                                                  <span className="flex-1">{act.name}</span>
+                                                  <span className="text-white">₩{act.cost.toLocaleString()}</span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        ))}
+                                        
+                                        <div className="grid grid-cols-3 gap-2 text-xs text-center">
+                                          {data.weather.map((w: string, i: number) => (
+                                            <div key={i} className="p-2 bg-white/5 rounded-lg">
+                                              <div className="text-white">{w.split(' ')[0]}</div>
+                                              <div className="text-[#999]">{w.split(' ')[1]}</div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  // Career Roadmap
+                                  if (data.type === 'career_roadmap') {
+                                    return (
+                                      <div className="mt-4 space-y-3">
+                                        <div className="grid grid-cols-2 gap-2 text-center text-xs">
+                                          <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-xl">
+                                            <div className="text-purple-400 mb-1">목표 연봉</div>
+                                            <div className="text-white text-xl font-bold">₩{(data.targetSalary / 10000).toFixed(0)}만원</div>
+                                          </div>
+                                          <div className="p-3 bg-teal-500/10 border border-teal-500/30 rounded-xl">
+                                            <div className="text-teal-400 mb-1">연봉 상승률</div>
+                                            <div className="text-white text-xl font-bold">{data.salaryIncrease}</div>
+                                          </div>
+                                        </div>
+                                        
+                                        {data.roadmap.map((phase: any, i: number) => (
+                                          <div key={i} className="glass-card p-3 rounded-xl">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <div>
+                                                <div className="text-white font-bold text-sm">Phase {phase.phase}</div>
+                                                <div className="text-[#999] text-xs">{phase.title}</div>
+                                              </div>
+                                              <div className="text-teal-400 text-xs">{phase.period}</div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1 mt-2">
+                                              {phase.skills.slice(0, 4).map((skill: string, j: number) => (
+                                                <span key={j} className="px-2 py-1 bg-[#7c6ef5]/20 border border-[#7c6ef5]/30 rounded text-xs text-[#7c6ef5]">
+                                                  {skill}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        ))}
+                                        
+                                        <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-xs">
+                                          <div className="text-blue-400 font-bold mb-1">🏢 추천 기업</div>
+                                          <div className="flex flex-wrap gap-1">
+                                            {data.topCompanies.map((company: string, i: number) => (
+                                              <span key={i} className="text-white">{company}{i < data.topCompanies.length - 1 ? ',' : ''}</span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  
+                                  return null;
+                                })()}
+                                
+                                <div className="text-xs text-[#999] mt-3 pt-2 border-t border-white/10">
                                   {new Date(msg.timestamp).toLocaleTimeString('ko-KR')}
                                 </div>
                               </div>
@@ -2362,29 +2862,68 @@ export default function MyMapBotPage() {
                         </div>
                       </div>
 
-                      {/* Quick Actions */}
-                      <div className="flex gap-3">
-                        <button 
-                          onClick={() => {
-                            getAiRecommendation(activeService, '오늘의 추천을 보여주세요');
-                          }}
-                          className="btn-ghost flex-1">
-                          ⭐ 오늘의 추천
-                        </button>
-                        <button 
-                          onClick={() => {
-                            getAiRecommendation(activeService, '지난 기록을 분석해주세요');
-                          }}
-                          className="btn-ghost flex-1">
-                          📊 분석 보기
-                        </button>
-                        <button 
-                          onClick={() => {
-                            notify('설정 화면으로 이동합니다', 'info');
-                          }}
-                          className="btn-ghost flex-1">
-                          ⚙️ 설정
-                        </button>
+                      {/* Quick Actions - Service Specific */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {(() => {
+                          const quickActions: { [key: string]: Array<{label: string, prompt: string, icon: string}> } = {
+                            fashion: [
+                              { label: '오늘의 코디', prompt: '오늘 날씨에 맞는 데일리 코디 추천해줘', icon: '👗' },
+                              { label: '쇼핑 리스트', prompt: '이번 시즌 필수 아이템 추천', icon: '🛍️' },
+                              { label: '스타일 분석', prompt: '내 스타일 유형 분석해줘', icon: '🎨' },
+                              { label: '브랜드 추천', prompt: '나에게 맞는 브랜드 추천', icon: '⭐' }
+                            ],
+                            healthcare: [
+                              { label: '오늘의 운동', prompt: '오늘 할 운동 루틴 추천', icon: '💪' },
+                              { label: '식단 플랜', prompt: '주간 식단 계획 세워줘', icon: '🥗' },
+                              { label: '건강 리포트', prompt: '이번 주 운동 분석', icon: '📊' },
+                              { label: '목표 조정', prompt: '현재 진행 상황 체크', icon: '🎯' }
+                            ],
+                            beauty: [
+                              { label: '루틴 추천', prompt: '계절별 스킨케어 루틴', icon: '✨' },
+                              { label: '제품 분석', prompt: '화장품 성분 분석', icon: '🔬' },
+                              { label: '피부 진단', prompt: '피부 상태 체크', icon: '📸' },
+                              { label: '트러블 케어', prompt: '피부 트러블 해결법', icon: '💊' }
+                            ],
+                            finance: [
+                              { label: '포트폴리오', prompt: '현재 포트폴리오 분석', icon: '💼' },
+                              { label: '리밸런싱', prompt: '자산 재배분 추천', icon: '⚖️' },
+                              { label: '시장 분석', prompt: '최근 시장 동향 분석', icon: '📈' },
+                              { label: '절세 전략', prompt: 'ISA 절세 방법', icon: '💰' }
+                            ],
+                            travel: [
+                              { label: '일정 최적화', prompt: '여행 일정 최적화해줘', icon: '🗓️' },
+                              { label: '예산 분석', prompt: '여행 경비 절약 팁', icon: '💵' },
+                              { label: '맛집 추천', prompt: '현지 맛집 추천', icon: '🍴' },
+                              { label: '준비물 체크', prompt: '여행 준비물 리스트', icon: '🎒' }
+                            ],
+                            education: [
+                              { label: '학습 플랜', prompt: '이번 주 학습 계획', icon: '📚' },
+                              { label: '모의 면접', prompt: '면접 질문 생성', icon: '🎤' },
+                              { label: '이력서 첨삭', prompt: '이력서 개선 포인트', icon: '📝' },
+                              { label: '연봉 협상', prompt: '연봉 협상 전략', icon: '💸' }
+                            ]
+                          };
+                          
+                          const actions = quickActions[activeService] || [];
+                          
+                          return actions.map((action, i) => (
+                            <button 
+                              key={i}
+                              onClick={() => {
+                                // Add user message
+                                addAiResponse(activeService, {
+                                  type: 'user',
+                                  text: action.prompt,
+                                  timestamp: new Date().toISOString()
+                                });
+                                getAiRecommendation(activeService, action.prompt);
+                              }}
+                              className="btn-ghost py-3 text-sm hover:scale-105 transition-transform">
+                              <span className="mr-2">{action.icon}</span>
+                              {action.label}
+                            </button>
+                          ));
+                        })()}
                       </div>
                     </div>
                   );
