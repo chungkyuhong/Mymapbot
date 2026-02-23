@@ -226,7 +226,7 @@ export default function MapBotPage() {
       </header>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center text-center
+      <section className="relative min-h-[60vh] flex flex-col items-center justify-center text-center
                            px-8 pt-28 pb-16 overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px]
                         rounded-full pointer-events-none"
@@ -234,28 +234,28 @@ export default function MapBotPage() {
         <div className="text-[#7c6ef5] text-xs font-bold tracking-[0.3em] uppercase mb-5">
           ✦ Mobility AI Agent · MaaS · LaaS
         </div>
-        <h1 className="font-serif text-5xl md:text-7xl font-light leading-tight mb-6">
+        <h1 className="font-serif text-4xl md:text-5xl font-light leading-tight mb-6">
           당신의 일상을<br />
           <strong className="font-semibold" style={{ background: 'linear-gradient(135deg,#7c6ef5,#5de6d0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             서비스로 누리세요
           </strong>
         </h1>
-        <p className="text-[#888899] text-lg max-w-xl leading-relaxed mb-12">
+        <p className="text-[#888899] text-base max-w-xl leading-relaxed mb-8">
           카카오맵 + 실시간 대중교통 + DRT 배차<br />
           이동·숙박·패션·헬스케어·미용·투자까지
         </p>
         <div className="flex gap-4 flex-wrap justify-center">
-          <button className="btn-accent" onClick={() => setActiveTab('mobility')}>
+          <button className="btn-accent" onClick={() => { setActiveTab('mobility'); window.scrollTo({ top: 600, behavior: 'smooth' }); }}>
             지금 시작하기 →
           </button>
-          <button className="btn-ghost" onClick={() => setActiveTab('fleet')}>
+          <button className="btn-ghost" onClick={() => { setActiveTab('fleet'); window.scrollTo({ top: 600, behavior: 'smooth' }); }}>
             실시간 Fleet 보기
           </button>
         </div>
-        <div className="flex gap-14 mt-20 flex-wrap justify-center">
+        <div className="flex gap-8 mt-12 flex-wrap justify-center">
           {[['128', '운행 차량'], ['1,240', '일 이용건'], ['12', '연계 도시'], ['4.9', '만족도']].map(([n, l]) => (
             <div key={l} className="text-center">
-              <span className="font-serif text-4xl font-medium text-[#7c6ef5] block">{n}</span>
+              <span className="font-serif text-2xl font-medium text-[#7c6ef5] block">{n}</span>
               <span className="text-xs text-[#888899] uppercase tracking-widest">{l}</span>
             </div>
           ))}
