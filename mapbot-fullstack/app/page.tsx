@@ -30,6 +30,8 @@ const LAAS_PRODUCTS = [
     tagline: '당신만의 패션 큐레이터',
     price: 299000,
     monthly: 29900,
+    originalPrice: 49900,
+    discount: 40,
     icon: '👗',
     image: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     features: [
@@ -42,6 +44,13 @@ const LAAS_PRODUCTS = [
     demo: '코디 시뮬레이터 체험',
     popular: false,
     trending: true,
+    stockLeft: 7,
+    viewingNow: 34,
+    purchasedToday: 128,
+    rating: 4.8,
+    reviewCount: 2847,
+    savedAmount: 240000,
+    limitedOffer: '48시간 한정',
   },
   {
     id: 'healthcare',
@@ -50,6 +59,8 @@ const LAAS_PRODUCTS = [
     tagline: '개인 맞춤형 웰니스 플랜',
     price: 199000,
     monthly: 19900,
+    originalPrice: 29900,
+    discount: 33,
     icon: '🏥',
     image: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     features: [
@@ -62,6 +73,13 @@ const LAAS_PRODUCTS = [
     demo: '건강 스코어 확인',
     popular: true,
     trending: false,
+    stockLeft: 3,
+    viewingNow: 89,
+    purchasedToday: 342,
+    rating: 4.9,
+    reviewCount: 5124,
+    savedAmount: 120000,
+    limitedOffer: '오늘만 특가',
   },
   {
     id: 'beauty',
@@ -70,8 +88,17 @@ const LAAS_PRODUCTS = [
     tagline: '피부 고민 해결사',
     price: 149000,
     monthly: 14900,
+    originalPrice: 24900,
+    discount: 40,
     icon: '💄',
     image: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+    stockLeft: 12,
+    viewingNow: 56,
+    purchasedToday: 203,
+    rating: 4.7,
+    reviewCount: 3891,
+    savedAmount: 150000,
+    limitedOffer: '신규 가입 특가',
     features: [
       '피부 타입 진단',
       '맞춤형 스킨케어 루틴',
@@ -90,6 +117,8 @@ const LAAS_PRODUCTS = [
     tagline: '똑똑한 자산 관리',
     price: 499000,
     monthly: 49900,
+    originalPrice: 79900,
+    discount: 38,
     icon: '📈',
     image: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
     features: [
@@ -102,6 +131,13 @@ const LAAS_PRODUCTS = [
     demo: '포트폴리오 분석',
     popular: true,
     trending: true,
+    stockLeft: 5,
+    viewingNow: 127,
+    purchasedToday: 456,
+    rating: 4.9,
+    reviewCount: 6732,
+    savedAmount: 360000,
+    limitedOffer: '얼리버드 특가',
   },
   {
     id: 'travel',
@@ -110,6 +146,8 @@ const LAAS_PRODUCTS = [
     tagline: '완벽한 여행 설계',
     price: 179000,
     monthly: 17900,
+    originalPrice: 27900,
+    discount: 36,
     icon: '✈️',
     image: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     features: [
@@ -122,6 +160,13 @@ const LAAS_PRODUCTS = [
     demo: '여행 플랜 만들기',
     popular: false,
     trending: false,
+    stockLeft: 18,
+    viewingNow: 43,
+    purchasedToday: 167,
+    rating: 4.6,
+    reviewCount: 2134,
+    savedAmount: 100000,
+    limitedOffer: '주말 특가',
   },
   {
     id: 'education',
@@ -130,6 +175,8 @@ const LAAS_PRODUCTS = [
     tagline: '성장하는 나를 위한 멘토',
     price: 249000,
     monthly: 24900,
+    originalPrice: 39900,
+    discount: 38,
     icon: '🎓',
     image: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
     features: [
@@ -142,6 +189,13 @@ const LAAS_PRODUCTS = [
     demo: '커리어 진단',
     popular: false,
     trending: false,
+    stockLeft: 9,
+    viewingNow: 67,
+    purchasedToday: 289,
+    rating: 4.8,
+    reviewCount: 4521,
+    savedAmount: 180000,
+    limitedOffer: '취업 시즌 특가',
   },
 ];
 
@@ -240,6 +294,73 @@ export default function MyMapBotPage() {
   // Demo results
   const [demoResult, setDemoResult] = useState<any>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  
+  // Purchase psychology triggers
+  const [timeLeft, setTimeLeft] = useState({ hours: 23, minutes: 45, seconds: 0 });
+  const [recentPurchases, setRecentPurchases] = useState<Array<{ user: string; product: string; time: string }>>([]);
+  const [showPurchasePopup, setShowPurchasePopup] = useState(false);
+  
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        let { hours, minutes, seconds } = prev;
+        
+        if (seconds > 0) {
+          seconds--;
+        } else if (minutes > 0) {
+          minutes--;
+          seconds = 59;
+        } else if (hours > 0) {
+          hours--;
+          minutes = 59;
+          seconds = 59;
+        }
+        
+        return { hours, minutes, seconds };
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  // Simulate recent purchases
+  useEffect(() => {
+    const purchaseData = [
+      { user: '김*진', product: '스마트 건강관리 AI', city: '서울' },
+      { user: '이*수', product: '퍼스널 스타일링 AI', city: '부산' },
+      { user: '박*영', product: '스마트 투자 AI', city: '대전' },
+      { user: '최*현', product: '뷰티 루틴 AI', city: '인천' },
+      { user: '정*민', product: '커리어 성장 AI', city: '광주' },
+    ];
+
+    const showRandomPurchase = () => {
+      const random = purchaseData[Math.floor(Math.random() * purchaseData.length)];
+      const minutesAgo = Math.floor(Math.random() * 10) + 1;
+      
+      setRecentPurchases(prev => [...prev, {
+        user: `${random.user} (${random.city})`,
+        product: random.product,
+        time: `${minutesAgo}분 전`
+      }].slice(-5));
+      
+      setShowPurchasePopup(true);
+      setTimeout(() => setShowPurchasePopup(false), 4000);
+    };
+
+    // Show first purchase after 3 seconds
+    const firstTimer = setTimeout(showRandomPurchase, 3000);
+    
+    // Then show every 15-25 seconds
+    const interval = setInterval(() => {
+      showRandomPurchase();
+    }, Math.random() * 10000 + 15000);
+
+    return () => {
+      clearTimeout(firstTimer);
+      clearInterval(interval);
+    };
+  }, []);
   
   // Notifications
   const [notifications, setNotifications] = useState<Array<{ id: number; text: string; type: string }>>([]);
@@ -442,7 +563,7 @@ export default function MyMapBotPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* ── HEADER ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between
+      <header className="fixed top-12 left-0 right-0 z-50 flex items-center justify-between
                          px-8 py-5 bg-black/80 backdrop-blur-xl border-b border-white/[0.07]
                          transition-all duration-300"
               style={{
@@ -503,6 +624,48 @@ export default function MyMapBotPage() {
             <p className="text-sm text-white">{n.text}</p>
           </div>
         ))}
+      </div>
+
+      {/* ── REAL-TIME PURCHASE POPUP ── */}
+      {showPurchasePopup && recentPurchases.length > 0 && (
+        <div className="fixed bottom-24 left-6 z-[60] animate-slide-in-left">
+          <div className="glass-card px-5 py-4 rounded-2xl shadow-2xl backdrop-blur-xl border-2 border-[#5de6d0]/30 max-w-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5de6d0] to-[#3dd5c0] flex items-center justify-center flex-shrink-0 animate-pulse">
+                🎉
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-[#5de6d0] font-bold mb-1">실시간 구매 알림</p>
+                <p className="text-sm text-white font-semibold mb-1">
+                  {recentPurchases[recentPurchases.length - 1].user}님이<br />
+                  <span className="gradient-text">{recentPurchases[recentPurchases.length - 1].product}</span>를 구매했습니다
+                </p>
+                <p className="text-xs text-[#888899]">{recentPurchases[recentPurchases.length - 1].time}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── URGENCY COUNTDOWN BANNER ── */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-r from-red-500 via-pink-500 to-red-500 py-2 shadow-lg animate-pulse">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-4 text-white">
+          <span className="font-bold text-sm">⚡ 특별 할인 종료까지</span>
+          <div className="flex items-center gap-2 font-mono text-lg font-bold">
+            <div className="bg-black/30 px-3 py-1 rounded">
+              {String(timeLeft.hours).padStart(2, '0')}
+            </div>
+            <span>:</span>
+            <div className="bg-black/30 px-3 py-1 rounded">
+              {String(timeLeft.minutes).padStart(2, '0')}
+            </div>
+            <span>:</span>
+            <div className="bg-black/30 px-3 py-1 rounded">
+              {String(timeLeft.seconds).padStart(2, '0')}
+            </div>
+          </div>
+          <span className="font-bold text-sm">남음! 서두르세요 🔥</span>
+        </div>
       </div>
 
       {/* ══ HOME / HERO ══ */}
@@ -738,8 +901,15 @@ export default function MyMapBotPage() {
                 
                 {/* Product Card Content */}
                 <div className="relative z-10 p-8">
+                  {/* Urgency Banner */}
+                  {product.limitedOffer && (
+                    <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold py-2 px-4 text-center animate-pulse">
+                      ⚡ {product.limitedOffer} ⚡
+                    </div>
+                  )}
+
                   {/* Header */}
-                  <div className="flex items-start justify-between mb-6">
+                  <div className="flex items-start justify-between mb-6 mt-8">
                     <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl 
                                     group-hover:scale-110 transition-transform duration-300"
                          style={{ background: product.image }}>
@@ -756,7 +926,41 @@ export default function MyMapBotPage() {
                           ⭐ HOT
                         </span>
                       )}
+                      {product.discount && (
+                        <span className="bg-red-500 text-white text-[0.65rem] px-2 py-1 rounded-full font-bold">
+                          {product.discount}% OFF
+                        </span>
+                      )}
                     </div>
+                  </div>
+
+                  {/* Social Proof */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-1">
+                      <span className="text-yellow-400 text-sm">⭐</span>
+                      <span className="text-sm font-bold text-white">{product.rating}</span>
+                      <span className="text-xs text-[#666677]">({product.reviewCount?.toLocaleString()})</span>
+                    </div>
+                    <div className="h-3 w-px bg-white/10" />
+                    <div className="text-xs text-[#888899]">
+                      {product.viewingNow}명이 보는 중
+                    </div>
+                  </div>
+
+                  {/* Scarcity */}
+                  {product.stockLeft && product.stockLeft <= 10 && (
+                    <div className="mb-4 px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-lg">
+                      <p className="text-xs text-red-400 font-semibold">
+                        ⚠️ 재고 {product.stockLeft}개 남음 - 서두르세요!
+                      </p>
+                    </div>
+                  )}
+
+                  {/* FOMO - Today's Purchase */}
+                  <div className="mb-4 px-3 py-2 bg-[#5de6d0]/10 border border-[#5de6d0]/20 rounded-lg">
+                    <p className="text-xs text-[#5de6d0] font-semibold">
+                      🔥 오늘 {product.purchasedToday}명이 구매했습니다
+                    </p>
                   </div>
 
                   {/* Category & Title */}
@@ -779,14 +983,23 @@ export default function MyMapBotPage() {
                   </ul>
 
                   {/* Pricing */}
-                  <div className="flex items-baseline gap-2 mb-6">
-                    <span className="text-3xl font-bold gradient-text">
-                      {(product.monthly / 1000).toFixed(1)}만원
-                    </span>
-                    <span className="text-sm text-[#888899]">/월</span>
-                    <span className="text-xs text-[#666677] line-through ml-auto">
-                      {(product.price / 1000).toFixed(0)}만원
-                    </span>
+                  <div className="mb-4">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-3xl font-bold gradient-text">
+                        {(product.monthly / 1000).toFixed(1)}만원
+                      </span>
+                      <span className="text-sm text-[#888899]">/월</span>
+                      {product.originalPrice && (
+                        <span className="text-sm text-[#666677] line-through ml-auto">
+                          {(product.originalPrice / 1000).toFixed(1)}만원
+                        </span>
+                      )}
+                    </div>
+                    {product.savedAmount && (
+                      <p className="text-xs text-[#5de6d0] font-semibold">
+                        💰 연간 {(product.savedAmount / 10000).toFixed(0)}만원 절약
+                      </p>
+                    )}
                   </div>
 
                   {/* CTA Buttons */}
@@ -796,8 +1009,9 @@ export default function MyMapBotPage() {
                         e.stopPropagation();
                         addToCart(product.id);
                       }}
-                      className="flex-1 btn-accent py-3 text-sm font-semibold hover:scale-105 transition-transform">
-                      장바구니 담기 🛒
+                      className="flex-1 btn-accent py-3 text-sm font-semibold hover:scale-105 transition-transform relative overflow-hidden">
+                      <span className="relative z-10">지금 시작하기 →</span>
+                      <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                     </button>
                     <button 
                       onClick={(e) => {
@@ -999,6 +1213,22 @@ export default function MyMapBotPage() {
                   className={plan.popular ? 'btn-accent w-full py-3' : 'btn-ghost w-full py-3'}>
                   {plan.cta}
                 </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust Badges */}
+          <div className="grid md:grid-cols-4 gap-6 mt-16 mb-12">
+            {[
+              { icon: '✅', title: '7일 환불 보장', desc: '100% 무조건 환불' },
+              { icon: '🔒', title: '안전한 결제', desc: 'SSL 암호화 보호' },
+              { icon: '⚡', title: '즉시 이용 가능', desc: '구매 후 바로 시작' },
+              { icon: '🎁', title: '무료 체험', desc: '모든 기능 체험 가능' },
+            ].map((badge, i) => (
+              <div key={i} className="card-3d text-center p-6 hover:scale-105 transition-transform">
+                <div className="text-4xl mb-3">{badge.icon}</div>
+                <div className="font-bold text-white mb-1">{badge.title}</div>
+                <div className="text-xs text-[#888899]">{badge.desc}</div>
               </div>
             ))}
           </div>
