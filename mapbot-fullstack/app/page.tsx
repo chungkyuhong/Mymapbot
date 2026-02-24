@@ -517,8 +517,21 @@ export default function MyMapBotPage() {
         reasoning: ''
       };
 
-      // 키워드 기반 상품 매칭
-      if (situation_lower.includes('면접') || situation_lower.includes('취업') || situation_lower.includes('정장')) {
+      // 키워드 기반 상품 매칭 (우선순위: 구체적 → 일반적)
+      // 🏠 주거 관련 (최우선)
+      if (situation_lower.includes('하숙') || situation_lower.includes('원룸') || situation_lower.includes('자취') || 
+          situation_lower.includes('이사') || situation_lower.includes('전세') || situation_lower.includes('월세') ||
+          (situation_lower.includes('집') && (situation_lower.includes('구') || situation_lower.includes('찾') || situation_lower.includes('근처')))) {
+        console.log('📍 Matched scenario: 주거/하숙');
+        selectedProducts = [
+          productDatabase.home.find(p => p.id === 'h1'), // 다이슨 청소기
+          productDatabase.home.find(p => p.id === 'h2'), // 쿠쿠 밥솥
+          productDatabase.home.find(p => p.id === 'h5')  // 일룸 의자
+        ].filter(Boolean) as any[];
+        analysisResult.keywords = ['주거', '생활용품', '신생활'];
+        analysisResult.categories = ['가전', '주방', '가구'];
+        analysisResult.reasoning = '새로운 보금자리를 위해 깨끗한 환경을 만드는 청소기, 혼자서도 간편하게 식사할 수 있는 밥솥, 그리고 공부나 업무에 필수적인 편안한 의자를 추천드립니다.';
+      } else if (situation_lower.includes('면접') || situation_lower.includes('취업') || situation_lower.includes('정장')) {
         console.log('📍 Matched scenario: 면접/취업');
         selectedProducts = [
           productDatabase.fashion.find(p => p.id === 'f5'), // 자라 정장
@@ -593,7 +606,9 @@ export default function MyMapBotPage() {
         analysisResult.keywords = ['겨울', '보온', '따뜻함'];
         analysisResult.categories = ['아우터', '이너웨어', '청소'];
         analysisResult.reasoning = '추운 겨울에는 강력한 보온 패딩과 내피용 히트텍, 그리고 건조한 실내 먼지 관리가 중요합니다.';
-      } else if (situation_lower.includes('대학') || situation_lower.includes('입학') || situation_lower.includes('학교') || situation_lower.includes('신입생')) {
+      } else if ((situation_lower.includes('대학') && (situation_lower.includes('입학') || situation_lower.includes('신입생'))) || 
+                 situation_lower.includes('새학기') || situation_lower.includes('개강')) {
+        console.log('📍 Matched scenario: 대학입학/신입생');
         selectedProducts = [
           productDatabase.electronics.find(p => p.id === 'e3'), // LG 그램 노트북
           productDatabase.electronics.find(p => p.id === 'e4'), // 로지텍 마우스
@@ -3383,13 +3398,13 @@ export default function MyMapBotPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {[
                   '내일 면접 있어요',
+                  '하숙집 구해요',
                   '주말 캠핑 계획',
                   '재택근무 환경 개선',
                   '첫 데이트 준비',
-                  '겨울 등산 준비',
+                  '대학 입학 준비',
                   '해외 여행 준비',
-                  '다이어트 시작',
-                  '출장 가요'
+                  '다이어트 시작'
                 ].map((example, i) => (
                   <button 
                     key={i}
