@@ -320,6 +320,8 @@ export default function MyMapBotPage() {
   const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
   const [isRecommending, setIsRecommending] = useState(false);
   const [purchaseAgentOrders, setPurchaseAgentOrders] = useState<any[]>([]);
+  const [useNaverSearch, setUseNaverSearch] = useState(false); // 네이버 검색 모드
+  const [naverSearchQuery, setNaverSearchQuery] = useState(''); // 검색 쿼리
   
   // Countdown timer
   useEffect(() => {
@@ -448,6 +450,8 @@ export default function MyMapBotPage() {
     console.log('🤖 Starting AI recommendation for:', situation);
     setIsRecommending(true);
     setRecommendedProducts([]);
+    setUseNaverSearch(false); // 초기화
+    setNaverSearchQuery('');
     notify('AI가 상황을 분석하고 최적의 상품을 찾고 있습니다...', 'info');
     
     setTimeout(() => {
@@ -627,24 +631,36 @@ export default function MyMapBotPage() {
         analysisResult.categories = ['청소기', '공기청정기', '정수기'];
         analysisResult.reasoning = '깨끗한 집 환경을 위해서는 강력한 청소기, 공기 정화, 그리고 깨끗한 물이 필수입니다.';
       } else {
-        // 기본 추천 (가장 인기 있는 상품들)
-        const allProducts = [
-          ...productDatabase.electronics,
-          ...productDatabase.fashion,
-          ...productDatabase.home,
-          ...productDatabase.beauty,
-          ...productDatabase.sports
+        // 🔍 매칭되는 시나리오가 없으면 네이버 쇼핑 검색으로 폴백
+        console.log('📍 No scenario matched - Using Naver Shopping Search');
+        setUseNaverSearch(true);
+        setNaverSearchQuery(situation);
+        
+        // 네이버 쇼핑 검색 URL 생성 (외부 링크)
+        const naverShoppingUrl = `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(situation)}`;
+        
+        // 가짜 상품 3개 생성 (네이버 검색 유도용)
+        selectedProducts = [
+          {
+            id: 'naver-search-1',
+            name: `"${situation}" 네이버 쇼핑 검색 결과`,
+            brand: 'Naver Shopping',
+            price: 0,
+            rating: 0,
+            reviews: 0,
+            image: '🔍',
+            category: '검색',
+            tags: ['네이버쇼핑', '외부검색'],
+            shippingDays: 0,
+            seller: 'Naver',
+            link: naverShoppingUrl,
+            isExternal: true
+          }
         ];
         
-        // 평점 높은 순으로 정렬
-        const topRated = allProducts
-          .sort((a, b) => b.rating - a.rating)
-          .slice(0, 3);
-        
-        selectedProducts = topRated;
-        analysisResult.keywords = ['인기', '베스트셀러', '범용'];
-        analysisResult.categories = topRated.map(p => p.category);
-        analysisResult.reasoning = `"${situation}" 상황에 가장 높은 평점을 받은 인기 상품들을 추천합니다. 다양한 상황에서 유용하게 사용할 수 있는 아이템들입니다.`;
+        analysisResult.keywords = ['검색', '네이버쇼핑', '외부'];
+        analysisResult.categories = ['검색'];
+        analysisResult.reasoning = `"${situation}"에 대한 사전 정의된 추천이 없습니다. 네이버 쇼핑에서 실시간 검색 결과를 확인해보세요! 더 많은 상품과 리뷰를 볼 수 있습니다.`;
       }
 
       // 선택된 상품이 없으면 기본 인기 상품 제공
@@ -3425,39 +3441,90 @@ export default function MyMapBotPage() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-2xl font-bold text-white flex items-center gap-2">
-                    ✨ AI 추천 결과
+                    {useNaverSearch ? '🔍 네이버 쇼핑 검색' : '✨ AI 추천 결과'}
                     <span className="text-sm font-normal text-teal-400">
-                      (상위 {recommendedProducts.length}개)
+                      {useNaverSearch ? '(외부 검색)' : `(상위 ${recommendedProducts.length}개)`}
                     </span>
                   </h3>
                 </div>
 
                 {/* Analysis Result */}
                 {recommendedProducts[0]?.analysisResult && (
-                  <div className="glass-card p-4 rounded-xl border border-[#7c6ef5]/30 mb-6">
+                  <div className={`glass-card p-4 rounded-xl border mb-6 ${
+                    useNaverSearch 
+                      ? 'border-green-500/30 bg-green-500/5' 
+                      : 'border-[#7c6ef5]/30'
+                  }`}>
                     <div className="flex items-start gap-3">
-                      <div className="text-3xl">💡</div>
+                      <div className="text-3xl">{useNaverSearch ? '🔍' : '💡'}</div>
                       <div className="flex-1">
-                        <div className="text-white font-bold mb-2">AI 분석 결과</div>
+                        <div className="text-white font-bold mb-2">
+                          {useNaverSearch ? '네이버 쇼핑 검색 안내' : 'AI 분석 결과'}
+                        </div>
                         <p className="text-[#999] text-sm leading-relaxed mb-3">
                           {recommendedProducts[0].analysisResult.reasoning}
                         </p>
-                        <div className="flex flex-wrap gap-2">
-                          <div className="text-xs text-[#999]">키워드:</div>
-                          {recommendedProducts[0].analysisResult.keywords.map((kw: string, i: number) => (
-                            <span key={i} className="px-2 py-1 bg-[#7c6ef5]/20 border border-[#7c6ef5]/30 rounded text-xs text-[#7c6ef5]">
-                              {kw}
-                            </span>
-                          ))}
-                        </div>
+                        {!useNaverSearch && (
+                          <div className="flex flex-wrap gap-2">
+                            <div className="text-xs text-[#999]">키워드:</div>
+                            {recommendedProducts[0].analysisResult.keywords.map((kw: string, i: number) => (
+                              <span key={i} className="px-2 py-1 bg-[#7c6ef5]/20 border border-[#7c6ef5]/30 rounded text-xs text-[#7c6ef5]">
+                                {kw}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Product Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {recommendedProducts.map((product, idx) => (
+                {/* Naver Shopping Search Card */}
+                {useNaverSearch && recommendedProducts[0]?.isExternal ? (
+                  <div className="glass-card p-8 rounded-2xl border-2 border-green-500/50 bg-gradient-to-br from-green-500/10 to-blue-500/10">
+                    <div className="text-center">
+                      <div className="text-8xl mb-4">🛍️</div>
+                      <h3 className="text-2xl font-bold text-white mb-3">
+                        네이버 쇼핑에서 검색하기
+                      </h3>
+                      <p className="text-[#999] mb-2">
+                        "<span className="text-white font-bold">{naverSearchQuery}</span>"
+                      </p>
+                      <p className="text-[#999] mb-6 text-sm">
+                        수천 개의 상품과 실시간 리뷰를 확인하세요
+                      </p>
+                      
+                      <a 
+                        href={recommendedProducts[0].link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 
+                                 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg">
+                        <span className="text-2xl">🔍</span>
+                        네이버 쇼핑 검색 결과 보기
+                        <span className="text-xl">→</span>
+                      </a>
+                      
+                      <div className="mt-6 flex items-center justify-center gap-4 text-sm text-[#999]">
+                        <div className="flex items-center gap-1">
+                          <span className="text-green-400">✓</span>
+                          실시간 가격 비교
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-green-400">✓</span>
+                          구매 후기
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-green-400">✓</span>
+                          빠른 배송
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Product Cards */
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {recommendedProducts.map((product, idx) => (
                     <div 
                       key={product.id}
                       className="glass-card p-5 rounded-2xl border border-white/10 hover:border-[#7c6ef5]/50 transition-all relative overflow-hidden group"
@@ -3525,6 +3592,7 @@ export default function MyMapBotPage() {
                     </div>
                   ))}
                 </div>
+                )}
 
                 {/* Purchase Agent Orders Status */}
                 {purchaseAgentOrders.length > 0 && (
