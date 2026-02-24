@@ -445,7 +445,9 @@ export default function MyMapBotPage() {
 
   // ✨ NEW: Situation-based Product Recommendation with Purchase Agent
   const analyzeSituationAndRecommend = (situation: string) => {
+    console.log('🤖 Starting AI recommendation for:', situation);
     setIsRecommending(true);
+    setRecommendedProducts([]);
     notify('AI가 상황을 분석하고 최적의 상품을 찾고 있습니다...', 'info');
     
     setTimeout(() => {
@@ -517,89 +519,137 @@ export default function MyMapBotPage() {
 
       // 키워드 기반 상품 매칭
       if (situation_lower.includes('면접') || situation_lower.includes('취업') || situation_lower.includes('정장')) {
+        console.log('📍 Matched scenario: 면접/취업');
         selectedProducts = [
-          productDatabase.fashion.find(p => p.id === 'f5')!, // 자라 정장
-          productDatabase.beauty.find(p => p.id === 'b1')!, // 설화수 크림
-          productDatabase.electronics.find(p => p.id === 'e3')! // LG 그램
-        ];
+          productDatabase.fashion.find(p => p.id === 'f5'), // 자라 정장
+          productDatabase.beauty.find(p => p.id === 'b1'), // 설화수 크림
+          productDatabase.electronics.find(p => p.id === 'e3') // LG 그램
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['면접', '정장', '첫인상'];
         analysisResult.categories = ['패션', '뷰티', '전자기기'];
         analysisResult.reasoning = '면접 상황에는 단정한 정장과 좋은 인상을 위한 스킨케어, 그리고 포트폴리오 준비를 위한 노트북이 필수입니다.';
       } else if (situation_lower.includes('데이트') || situation_lower.includes('소개팅')) {
+        console.log('📍 Matched scenario: 데이트/소개팅');
         selectedProducts = [
-          productDatabase.fashion.find(p => p.id === 'f3')!, // H&M 청바지
-          productDatabase.beauty.find(p => p.id === 'b2')!, // SK-II 에센스
-          productDatabase.fashion.find(p => p.id === 'f6')! // 레이벤 선글라스
-        ];
+          productDatabase.fashion.find(p => p.id === 'f3'), // H&M 청바지
+          productDatabase.beauty.find(p => p.id === 'b2'), // SK-II 에센스
+          productDatabase.fashion.find(p => p.id === 'f6') // 레이벤 선글라스
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['데이트', '첫인상', '스타일'];
         analysisResult.categories = ['패션', '뷰티', '액세서리'];
         analysisResult.reasoning = '데이트에는 깔끔한 캐주얼 룩과 빛나는 피부, 그리고 세련된 액세서리로 완벽한 첫인상을 만들어보세요.';
       } else if (situation_lower.includes('캠핑') || situation_lower.includes('야외') || situation_lower.includes('등산')) {
+        console.log('📍 Matched scenario: 캠핑/야외');
         selectedProducts = [
-          productDatabase.fashion.find(p => p.id === 'f2')!, // 노스페이스 패딩
-          productDatabase.travel.find(p => p.id === 't2')!, // 에이스 침낭
-          productDatabase.travel.find(p => p.id === 't4')! // 코베아 버너
-        ];
+          productDatabase.fashion.find(p => p.id === 'f2'), // 노스페이스 패딩
+          productDatabase.travel.find(p => p.id === 't2'), // 에이스 침낭
+          productDatabase.travel.find(p => p.id === 't4') // 코베아 버너
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['캠핑', '야외', '보온'];
         analysisResult.categories = ['아우터', '캠핑용품', '조리기구'];
         analysisResult.reasoning = '캠핑에는 따뜻한 보온 장비와 편안한 수면 환경, 그리고 간편한 조리 도구가 필수입니다.';
       } else if (situation_lower.includes('재택') || situation_lower.includes('홈오피스') || situation_lower.includes('업무')) {
         selectedProducts = [
-          productDatabase.home.find(p => p.id === 'h5')!, // 일룸 의자
-          productDatabase.electronics.find(p => p.id === 'e4')!, // 로지텍 마우스
-          productDatabase.electronics.find(p => p.id === 'e6')! // 벤큐 모니터
-        ];
+          productDatabase.home.find(p => p.id === 'h5'), // 일룸 의자
+          productDatabase.electronics.find(p => p.id === 'e4'), // 로지텍 마우스
+          productDatabase.electronics.find(p => p.id === 'e6') // 벤큐 모니터
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['재택근무', '생산성', '인체공학'];
         analysisResult.categories = ['가구', '전자기기', '모니터'];
         analysisResult.reasoning = '재택근무 환경에는 편안한 의자, 생산성 높은 마우스, 그리고 눈 건강을 위한 모니터가 필수입니다.';
       } else if (situation_lower.includes('운동') || situation_lower.includes('헬스') || situation_lower.includes('다이어트')) {
         selectedProducts = [
-          productDatabase.sports.find(p => p.id === 's1')!, // 아디다스 울트라부스트
-          productDatabase.sports.find(p => p.id === 's3')!, // 언더아머 티셔츠
-          productDatabase.food.find(p => p.id === 'fo3')! // 곰곰 구운란
-        ];
+          productDatabase.sports.find(p => p.id === 's1'), // 아디다스 울트라부스트
+          productDatabase.sports.find(p => p.id === 's3'), // 언더아머 티셔츠
+          productDatabase.food.find(p => p.id === 'fo3') // 곰곰 구운란
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['운동', '다이어트', '건강'];
         analysisResult.categories = ['운동화', '운동복', '식품'];
         analysisResult.reasoning = '효과적인 운동을 위해서는 쿠셔닝 좋은 신발, 땀 배출이 잘되는 옷, 그리고 단백질 보충이 중요합니다.';
       } else if (situation_lower.includes('여행') || situation_lower.includes('휴가') || situation_lower.includes('비행기')) {
         selectedProducts = [
-          productDatabase.travel.find(p => p.id === 't1')!, // 사무소나이트 캐리어
-          productDatabase.electronics.find(p => p.id === 'e5')!, // 샤오미 보조배터리
-          productDatabase.electronics.find(p => p.id === 'e1')! // 애플 에어팟 프로
-        ];
+          productDatabase.travel.find(p => p.id === 't1'), // 사무소나이트 캐리어
+          productDatabase.electronics.find(p => p.id === 'e5'), // 샤오미 보조배터리
+          productDatabase.electronics.find(p => p.id === 'e1') // 애플 에어팟 프로
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['여행', '휴가', '이동'];
         analysisResult.categories = ['캐리어', '배터리', '오디오'];
         analysisResult.reasoning = '여행에는 튼튼한 캐리어, 긴 이동 시간을 위한 보조배터리, 그리고 편안한 이동을 위한 노이즈캔슬링 이어폰이 필수입니다.';
       } else if (situation_lower.includes('출장') || situation_lower.includes('비즈니스')) {
         selectedProducts = [
-          productDatabase.fashion.find(p => p.id === 'f5')!, // 자라 정장
-          productDatabase.electronics.find(p => p.id === 'e3')!, // LG 그램
-          productDatabase.travel.find(p => p.id === 't1')! // 사무소나이트 캐리어
-        ];
+          productDatabase.fashion.find(p => p.id === 'f5'), // 자라 정장
+          productDatabase.electronics.find(p => p.id === 'e3'), // LG 그램
+          productDatabase.travel.find(p => p.id === 't1') // 사무소나이트 캐리어
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['출장', '비즈니스', '전문성'];
         analysisResult.categories = ['정장', '노트북', '캐리어'];
         analysisResult.reasoning = '출장에는 단정한 정장, 가벼운 노트북, 그리고 프로페셔널한 캐리어가 필수입니다.';
       } else if (situation_lower.includes('겨울') || situation_lower.includes('추위') || situation_lower.includes('보온')) {
         selectedProducts = [
-          productDatabase.fashion.find(p => p.id === 'f2')!, // 노스페이스 패딩
-          productDatabase.fashion.find(p => p.id === 'f1')!, // 유니클로 히트텍
-          productDatabase.home.find(p => p.id === 'h1')! // 다이슨 청소기 (먼지 많은 계절)
-        ];
+          productDatabase.fashion.find(p => p.id === 'f2'),
+          productDatabase.fashion.find(p => p.id === 'f1'),
+          productDatabase.home.find(p => p.id === 'h1')
+        ].filter(Boolean) as any[];
         analysisResult.keywords = ['겨울', '보온', '따뜻함'];
         analysisResult.categories = ['아우터', '이너웨어', '청소'];
         analysisResult.reasoning = '추운 겨울에는 강력한 보온 패딩과 내피용 히트텍, 그리고 건조한 실내 먼지 관리가 중요합니다.';
+      } else if (situation_lower.includes('대학') || situation_lower.includes('입학') || situation_lower.includes('학교') || situation_lower.includes('신입생')) {
+        selectedProducts = [
+          productDatabase.electronics.find(p => p.id === 'e3'), // LG 그램 노트북
+          productDatabase.electronics.find(p => p.id === 'e4'), // 로지텍 마우스
+          productDatabase.fashion.find(p => p.id === 'f7') // 무신사 후드
+        ].filter(Boolean) as any[];
+        analysisResult.keywords = ['대학', '입학', '신입생', '학업'];
+        analysisResult.categories = ['노트북', '마우스', '패션'];
+        analysisResult.reasoning = '대학 입학을 축하드립니다! 학업에 필수적인 가벼운 노트북과 편안한 마우스, 그리고 캠퍼스에서 입기 좋은 캐주얼 룩을 추천합니다.';
+      } else if (situation_lower.includes('청소') || situation_lower.includes('집정리') || situation_lower.includes('대청소')) {
+        selectedProducts = [
+          productDatabase.home.find(p => p.id === 'h1'), // 다이슨 청소기
+          productDatabase.home.find(p => p.id === 'h3'), // 필립스 공기청정기
+          productDatabase.home.find(p => p.id === 'h6') // 코웨이 정수기
+        ].filter(Boolean) as any[];
+        analysisResult.keywords = ['청소', '집정리', '깔끔'];
+        analysisResult.categories = ['청소기', '공기청정기', '정수기'];
+        analysisResult.reasoning = '깨끗한 집 환경을 위해서는 강력한 청소기, 공기 정화, 그리고 깨끗한 물이 필수입니다.';
       } else {
         // 기본 추천 (가장 인기 있는 상품들)
-        selectedProducts = [
-          productDatabase.electronics.find(p => p.id === 'e1')!, // 애플 에어팟
-          productDatabase.fashion.find(p => p.id === 'f4')!, // 나이키 에어맥스
-          productDatabase.home.find(p => p.id === 'h1')! // 다이슨 청소기
+        const allProducts = [
+          ...productDatabase.electronics,
+          ...productDatabase.fashion,
+          ...productDatabase.home,
+          ...productDatabase.beauty,
+          ...productDatabase.sports
         ];
+        
+        // 평점 높은 순으로 정렬
+        const topRated = allProducts
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 3);
+        
+        selectedProducts = topRated;
         analysisResult.keywords = ['인기', '베스트셀러', '범용'];
-        analysisResult.categories = ['전자기기', '신발', '가전'];
-        analysisResult.reasoning = '입력하신 상황에 가장 많은 사람들이 선택한 인기 상품을 추천합니다. 일상 생활에 유용한 아이템들입니다.';
+        analysisResult.categories = topRated.map(p => p.category);
+        analysisResult.reasoning = `"${situation}" 상황에 가장 높은 평점을 받은 인기 상품들을 추천합니다. 다양한 상황에서 유용하게 사용할 수 있는 아이템들입니다.`;
       }
 
+      // 선택된 상품이 없으면 기본 인기 상품 제공
+      if (selectedProducts.length === 0) {
+        console.warn('⚠️ No products matched, using fallback top-rated items');
+        const allProducts = [
+          ...productDatabase.electronics,
+          ...productDatabase.fashion,
+          ...productDatabase.home,
+          ...productDatabase.beauty,
+          ...productDatabase.sports
+        ];
+        selectedProducts = allProducts
+          .sort((a, b) => b.rating - a.rating)
+          .slice(0, 3);
+        analysisResult.keywords = ['인기', '베스트셀러', '추천'];
+        analysisResult.categories = selectedProducts.map(p => p.category);
+        analysisResult.reasoning = `"${situation}" 상황에 가장 높은 평점을 받은 인기 상품들을 추천드립니다.`;
+      }
+      
       // 가격 순 정렬 (저렴한 순)
       selectedProducts.sort((a, b) => a.price - b.price);
       
@@ -611,6 +661,7 @@ export default function MyMapBotPage() {
         analysisResult
       }));
 
+      console.log('✅ Recommended products:', top3);
       setRecommendedProducts(top3);
       setIsRecommending(false);
       notify(`✨ AI가 "${situation}" 상황에 최적인 ${top3.length}개 상품을 추천했습니다!`, 'success');
