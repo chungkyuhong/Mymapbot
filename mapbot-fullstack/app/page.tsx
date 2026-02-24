@@ -314,6 +314,13 @@ export default function MyMapBotPage() {
   const [recentPurchases, setRecentPurchases] = useState<Array<{ user: string; product: string; time: string }>>([]);
   const [showPurchasePopup, setShowPurchasePopup] = useState(false);
   
+  // ✨ NEW: Situation-based Product Recommendation System
+  const [showRecommendModal, setShowRecommendModal] = useState(false);
+  const [situationInput, setSituationInput] = useState('');
+  const [recommendedProducts, setRecommendedProducts] = useState<any[]>([]);
+  const [isRecommending, setIsRecommending] = useState(false);
+  const [purchaseAgentOrders, setPurchaseAgentOrders] = useState<any[]>([]);
+  
   // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
@@ -434,6 +441,211 @@ export default function MyMapBotPage() {
       setShowDashboard(true);
       notify('내 대시보드로 이동합니다', 'info');
     }, 1500);
+  };
+
+  // ✨ NEW: Situation-based Product Recommendation with Purchase Agent
+  const analyzeSituationAndRecommend = (situation: string) => {
+    setIsRecommending(true);
+    notify('AI가 상황을 분석하고 최적의 상품을 찾고 있습니다...', 'info');
+    
+    setTimeout(() => {
+      // 실제 상품 데이터베이스 (카테고리별 실제 상품들)
+      const productDatabase = {
+        fashion: [
+          { id: 'f1', name: '유니클로 히트텍 이너웨어', brand: 'Uniqlo', price: 19900, rating: 4.8, reviews: 3420, image: '🧥', category: '의류', tags: ['겨울', '보온', '데일리', '실내'], shippingDays: 1, seller: 'Uniqlo 공식', link: '#' },
+          { id: 'f2', name: '노스페이스 경량 패딩', brand: 'The North Face', price: 189000, rating: 4.9, reviews: 2145, image: '🧥', category: '아우터', tags: ['겨울', '등산', '캠핑', '야외활동'], shippingDays: 2, seller: '노스페이스 공식', link: '#' },
+          { id: 'f3', name: 'H&M 슬림핏 청바지', brand: 'H&M', price: 39900, rating: 4.5, reviews: 1823, image: '👖', category: '하의', tags: ['캐주얼', '데일리', '사계절'], shippingDays: 1, seller: 'H&M', link: '#' },
+          { id: 'f4', name: '나이키 에어맥스', brand: 'Nike', price: 139000, rating: 4.9, reviews: 5621, image: '👟', category: '신발', tags: ['운동', '러닝', '워킹', '스포츠'], shippingDays: 2, seller: 'Nike 공식', link: '#' },
+          { id: 'f5', name: '자라 정장 재킷', brand: 'Zara', price: 89000, rating: 4.6, reviews: 892, image: '👔', category: '정장', tags: ['비즈니스', '면접', '회의', '정장'], shippingDays: 2, seller: 'Zara', link: '#' },
+          { id: 'f6', name: '레이벤 선글라스', brand: 'Ray-Ban', price: 168000, rating: 4.9, reviews: 1245, image: '🕶️', category: '액세서리', tags: ['여름', '여행', '운전', '야외'], shippingDays: 1, seller: 'Luxottica', link: '#' },
+          { id: 'f7', name: '무신사 오버핏 후드', brand: 'Musinsa Standard', price: 45900, rating: 4.7, reviews: 3890, image: '👕', category: '상의', tags: ['캐주얼', '힙합', '스트릿', '데일리'], shippingDays: 1, seller: '무신사', link: '#' },
+          { id: 'f8', name: '컨버스 척테일러', brand: 'Converse', price: 69000, rating: 4.8, reviews: 4120, image: '👟', category: '신발', tags: ['캐주얼', '클래식', '데일리', '스트릿'], shippingDays: 1, seller: 'Converse 공식', link: '#' }
+        ],
+        electronics: [
+          { id: 'e1', name: '애플 에어팟 프로 2세대', brand: 'Apple', price: 359000, rating: 4.9, reviews: 8234, image: '🎧', category: '오디오', tags: ['무선', '노이즈캔슬링', '통화', '음악'], shippingDays: 1, seller: 'Apple 공식', link: '#' },
+          { id: 'e2', name: '삼성 갤럭시 버즈2 프로', brand: 'Samsung', price: 229000, rating: 4.7, reviews: 5621, image: '🎧', category: '오디오', tags: ['무선', '노이즈캔슬링', '운동', '방수'], shippingDays: 1, seller: 'Samsung 공식', link: '#' },
+          { id: 'e3', name: 'LG 그램 17인치', brand: 'LG', price: 2390000, rating: 4.8, reviews: 1234, image: '💻', category: '노트북', tags: ['업무', '가벼움', '장시간', '재택'], shippingDays: 2, seller: 'LG 공식', link: '#' },
+          { id: 'e4', name: '로지텍 MX Master 3S', brand: 'Logitech', price: 139000, rating: 4.9, reviews: 3421, image: '🖱️', category: '마우스', tags: ['업무', '무선', '인체공학', '생산성'], shippingDays: 1, seller: 'Logitech', link: '#' },
+          { id: 'e5', name: '샤오미 보조배터리 20000mAh', brand: 'Xiaomi', price: 39900, rating: 4.8, reviews: 6789, image: '🔋', category: '배터리', tags: ['여행', '출장', '캠핑', '비상'], shippingDays: 1, seller: 'Xiaomi', link: '#' },
+          { id: 'e6', name: '벤큐 아이케어 모니터 27인치', brand: 'BenQ', price: 389000, rating: 4.8, reviews: 2341, image: '🖥️', category: '모니터', tags: ['업무', '눈보호', '재택', '장시간'], shippingDays: 2, seller: 'BenQ', link: '#' }
+        ],
+        home: [
+          { id: 'h1', name: '다이슨 V15 무선청소기', brand: 'Dyson', price: 899000, rating: 4.9, reviews: 4521, image: '🧹', category: '청소', tags: ['무선', '강력', '먼지감지', '반려동물'], shippingDays: 2, seller: 'Dyson 공식', link: '#' },
+          { id: 'h2', name: '쿠쿠 압력밥솥 6인용', brand: 'Cuckoo', price: 389000, rating: 4.8, reviews: 3214, image: '🍚', category: '주방', tags: ['가족', '요리', '음압', '보온'], shippingDays: 2, seller: 'Cuckoo', link: '#' },
+          { id: 'h3', name: '필립스 공기청정기', brand: 'Philips', price: 459000, rating: 4.8, reviews: 2891, image: '💨', category: '가전', tags: ['미세먼지', '황사', '알레르기', '실내'], shippingDays: 2, seller: 'Philips', link: '#' },
+          { id: 'h4', name: '이케아 말름 책상', brand: 'IKEA', price: 129000, rating: 4.6, reviews: 1823, image: '🪑', category: '가구', tags: ['재택', '업무', '조립', '공간활용'], shippingDays: 3, seller: 'IKEA', link: '#' },
+          { id: 'h5', name: '일룸 린백 의자', brand: 'iloom', price: 289000, rating: 4.9, reviews: 3421, image: '🪑', category: '의자', tags: ['업무', '인체공학', '허리', '장시간'], shippingDays: 3, seller: '일룸', link: '#' },
+          { id: 'h6', name: '코웨이 정수기 렌탈', brand: 'Coway', price: 39900, rating: 4.7, reviews: 5621, image: '💧', category: '정수기', tags: ['건강', '물', '렌탈', '필터'], shippingDays: 5, seller: 'Coway', link: '#', isRental: true }
+        ],
+        beauty: [
+          { id: 'b1', name: '설화수 자음생 크림', brand: 'Sulwhasoo', price: 198000, rating: 4.9, reviews: 3421, image: '🧴', category: '스킨케어', tags: ['안티에이징', '보습', '탄력', '한방'], shippingDays: 1, seller: '설화수 공식', link: '#' },
+          { id: 'b2', name: 'SK-II 페이셜 트리트먼트 에센스', brand: 'SK-II', price: 189000, rating: 4.8, reviews: 2891, image: '💧', category: '에센스', tags: ['피부결', '광채', '수분', '럭셔리'], shippingDays: 1, seller: 'SK-II', link: '#' },
+          { id: 'b3', name: '에스티로더 어드밴스드 나이트 리페어', brand: 'Estée Lauder', price: 152000, rating: 4.9, reviews: 4521, image: '🌙', category: '세럼', tags: ['야간', '재생', '탄력', '안티에이징'], shippingDays: 1, seller: 'Estée Lauder', link: '#' },
+          { id: 'b4', name: '라로슈포제 시카플라스트 밤', brand: 'La Roche-Posay', price: 28900, rating: 4.8, reviews: 6782, image: '💊', category: '진정', tags: ['트러블', '진정', '재생', '민감'], shippingDays: 1, seller: '라로슈포제', link: '#' },
+          { id: 'b5', name: '비오템 아쿠아소스 크림', brand: 'Biotherm', price: 89000, rating: 4.7, reviews: 1823, image: '💦', category: '보습', tags: ['수분', '청량', '보습', '여름'], shippingDays: 1, seller: 'Biotherm', link: '#' }
+        ],
+        sports: [
+          { id: 's1', name: '아디다스 울트라부스트', brand: 'Adidas', price: 229000, rating: 4.9, reviews: 5234, image: '👟', category: '러닝화', tags: ['러닝', '조깅', '마라톤', '쿠셔닝'], shippingDays: 2, seller: 'Adidas 공식', link: '#' },
+          { id: 's2', name: '룰루레몬 요가매트', brand: 'Lululemon', price: 98000, rating: 4.8, reviews: 2341, image: '🧘', category: '요가', tags: ['요가', '필라테스', '홈트', '미끄럼방지'], shippingDays: 2, seller: 'Lululemon', link: '#' },
+          { id: 's3', name: '언더아머 쿨스위치 티셔츠', brand: 'Under Armour', price: 49000, rating: 4.7, reviews: 3421, image: '👕', category: '운동복', tags: ['운동', '땀배출', '시원', '여름'], shippingDays: 1, seller: 'Under Armour', link: '#' },
+          { id: 's4', name: '제이드 요가매트 5mm', brand: 'Jade Yoga', price: 129000, rating: 4.9, reviews: 1245, image: '🧘', category: '요가', tags: ['요가', '친환경', '그립', '프리미엄'], shippingDays: 3, seller: 'Jade', link: '#' },
+          { id: 's5', name: '나이키 드라이핏 반바지', brand: 'Nike', price: 39900, rating: 4.6, reviews: 2891, image: '🩳', category: '운동복', tags: ['러닝', '운동', '땀배출', '편안'], shippingDays: 1, seller: 'Nike', link: '#' }
+        ],
+        food: [
+          { id: 'fo1', name: '오뚜기 3분 카레 멀티팩', brand: 'Ottogi', price: 24900, rating: 4.7, reviews: 5621, image: '🍛', category: '간편식', tags: ['간편', '혼밥', '비상식량', '캠핑'], shippingDays: 1, seller: '오뚜기', link: '#' },
+          { id: 'fo2', name: '마켓컬리 신선 과일 박스', brand: 'Kurly', price: 39900, rating: 4.8, reviews: 3421, image: '🍎', category: '과일', tags: ['신선', '건강', '아침', '선물'], shippingDays: 1, seller: '마켓컬리', link: '#', isFresh: true },
+          { id: 'fo3', name: '곰곰 구운란', brand: 'Gomgom', price: 5990, rating: 4.6, reviews: 4521, image: '🥚', category: '달걀', tags: ['간식', '단백질', '다이어트', '간편'], shippingDays: 1, seller: '쿠팡', link: '#', isFresh: true },
+          { id: 'fo4', name: '삼다수 2L 12병', brand: 'Samdasoo', price: 9900, rating: 4.7, reviews: 8234, image: '💧', category: '생수', tags: ['물', '수분', '건강', '비상'], shippingDays: 1, seller: '제주개발공사', link: '#' }
+        ],
+        travel: [
+          { id: 't1', name: '사무소나이트 캐리어 28인치', brand: 'Samsonite', price: 389000, rating: 4.9, reviews: 2341, image: '🧳', category: '캐리어', tags: ['여행', '출장', '장기', '해외'], shippingDays: 2, seller: 'Samsonite', link: '#' },
+          { id: 't2', name: '에이스 침낭 -10도', brand: 'ACE', price: 89000, rating: 4.8, reviews: 1823, image: '🛌', category: '캠핑', tags: ['캠핑', '등산', '겨울', '보온'], shippingDays: 2, seller: 'ACE', link: '#' },
+          { id: 't3', name: '오스프리 등산배낭 40L', brand: 'Osprey', price: 269000, rating: 4.9, reviews: 1234, image: '🎒', category: '백팩', tags: ['등산', '배낭여행', '트레킹', '장거리'], shippingDays: 2, seller: 'Osprey', link: '#' },
+          { id: 't4', name: '코베아 휴대용 버너', brand: 'Kovea', price: 49900, rating: 4.7, reviews: 3421, image: '🔥', category: '버너', tags: ['캠핑', '요리', '휴대', '가스'], shippingDays: 1, seller: 'Kovea', link: '#' }
+        ]
+      };
+
+      // AI 상황 분석 로직
+      const situation_lower = situation.toLowerCase();
+      let selectedProducts: any[] = [];
+      let analysisResult = {
+        situation,
+        keywords: [] as string[],
+        categories: [] as string[],
+        reasoning: ''
+      };
+
+      // 키워드 기반 상품 매칭
+      if (situation_lower.includes('면접') || situation_lower.includes('취업') || situation_lower.includes('정장')) {
+        selectedProducts = [
+          productDatabase.fashion.find(p => p.id === 'f5')!, // 자라 정장
+          productDatabase.beauty.find(p => p.id === 'b1')!, // 설화수 크림
+          productDatabase.electronics.find(p => p.id === 'e3')! // LG 그램
+        ];
+        analysisResult.keywords = ['면접', '정장', '첫인상'];
+        analysisResult.categories = ['패션', '뷰티', '전자기기'];
+        analysisResult.reasoning = '면접 상황에는 단정한 정장과 좋은 인상을 위한 스킨케어, 그리고 포트폴리오 준비를 위한 노트북이 필수입니다.';
+      } else if (situation_lower.includes('데이트') || situation_lower.includes('소개팅')) {
+        selectedProducts = [
+          productDatabase.fashion.find(p => p.id === 'f3')!, // H&M 청바지
+          productDatabase.beauty.find(p => p.id === 'b2')!, // SK-II 에센스
+          productDatabase.fashion.find(p => p.id === 'f6')! // 레이벤 선글라스
+        ];
+        analysisResult.keywords = ['데이트', '첫인상', '스타일'];
+        analysisResult.categories = ['패션', '뷰티', '액세서리'];
+        analysisResult.reasoning = '데이트에는 깔끔한 캐주얼 룩과 빛나는 피부, 그리고 세련된 액세서리로 완벽한 첫인상을 만들어보세요.';
+      } else if (situation_lower.includes('캠핑') || situation_lower.includes('야외') || situation_lower.includes('등산')) {
+        selectedProducts = [
+          productDatabase.fashion.find(p => p.id === 'f2')!, // 노스페이스 패딩
+          productDatabase.travel.find(p => p.id === 't2')!, // 에이스 침낭
+          productDatabase.travel.find(p => p.id === 't4')! // 코베아 버너
+        ];
+        analysisResult.keywords = ['캠핑', '야외', '보온'];
+        analysisResult.categories = ['아우터', '캠핑용품', '조리기구'];
+        analysisResult.reasoning = '캠핑에는 따뜻한 보온 장비와 편안한 수면 환경, 그리고 간편한 조리 도구가 필수입니다.';
+      } else if (situation_lower.includes('재택') || situation_lower.includes('홈오피스') || situation_lower.includes('업무')) {
+        selectedProducts = [
+          productDatabase.home.find(p => p.id === 'h5')!, // 일룸 의자
+          productDatabase.electronics.find(p => p.id === 'e4')!, // 로지텍 마우스
+          productDatabase.electronics.find(p => p.id === 'e6')! // 벤큐 모니터
+        ];
+        analysisResult.keywords = ['재택근무', '생산성', '인체공학'];
+        analysisResult.categories = ['가구', '전자기기', '모니터'];
+        analysisResult.reasoning = '재택근무 환경에는 편안한 의자, 생산성 높은 마우스, 그리고 눈 건강을 위한 모니터가 필수입니다.';
+      } else if (situation_lower.includes('운동') || situation_lower.includes('헬스') || situation_lower.includes('다이어트')) {
+        selectedProducts = [
+          productDatabase.sports.find(p => p.id === 's1')!, // 아디다스 울트라부스트
+          productDatabase.sports.find(p => p.id === 's3')!, // 언더아머 티셔츠
+          productDatabase.food.find(p => p.id === 'fo3')! // 곰곰 구운란
+        ];
+        analysisResult.keywords = ['운동', '다이어트', '건강'];
+        analysisResult.categories = ['운동화', '운동복', '식품'];
+        analysisResult.reasoning = '효과적인 운동을 위해서는 쿠셔닝 좋은 신발, 땀 배출이 잘되는 옷, 그리고 단백질 보충이 중요합니다.';
+      } else if (situation_lower.includes('여행') || situation_lower.includes('휴가') || situation_lower.includes('비행기')) {
+        selectedProducts = [
+          productDatabase.travel.find(p => p.id === 't1')!, // 사무소나이트 캐리어
+          productDatabase.electronics.find(p => p.id === 'e5')!, // 샤오미 보조배터리
+          productDatabase.electronics.find(p => p.id === 'e1')! // 애플 에어팟 프로
+        ];
+        analysisResult.keywords = ['여행', '휴가', '이동'];
+        analysisResult.categories = ['캐리어', '배터리', '오디오'];
+        analysisResult.reasoning = '여행에는 튼튼한 캐리어, 긴 이동 시간을 위한 보조배터리, 그리고 편안한 이동을 위한 노이즈캔슬링 이어폰이 필수입니다.';
+      } else if (situation_lower.includes('출장') || situation_lower.includes('비즈니스')) {
+        selectedProducts = [
+          productDatabase.fashion.find(p => p.id === 'f5')!, // 자라 정장
+          productDatabase.electronics.find(p => p.id === 'e3')!, // LG 그램
+          productDatabase.travel.find(p => p.id === 't1')! // 사무소나이트 캐리어
+        ];
+        analysisResult.keywords = ['출장', '비즈니스', '전문성'];
+        analysisResult.categories = ['정장', '노트북', '캐리어'];
+        analysisResult.reasoning = '출장에는 단정한 정장, 가벼운 노트북, 그리고 프로페셔널한 캐리어가 필수입니다.';
+      } else if (situation_lower.includes('겨울') || situation_lower.includes('추위') || situation_lower.includes('보온')) {
+        selectedProducts = [
+          productDatabase.fashion.find(p => p.id === 'f2')!, // 노스페이스 패딩
+          productDatabase.fashion.find(p => p.id === 'f1')!, // 유니클로 히트텍
+          productDatabase.home.find(p => p.id === 'h1')! // 다이슨 청소기 (먼지 많은 계절)
+        ];
+        analysisResult.keywords = ['겨울', '보온', '따뜻함'];
+        analysisResult.categories = ['아우터', '이너웨어', '청소'];
+        analysisResult.reasoning = '추운 겨울에는 강력한 보온 패딩과 내피용 히트텍, 그리고 건조한 실내 먼지 관리가 중요합니다.';
+      } else {
+        // 기본 추천 (가장 인기 있는 상품들)
+        selectedProducts = [
+          productDatabase.electronics.find(p => p.id === 'e1')!, // 애플 에어팟
+          productDatabase.fashion.find(p => p.id === 'f4')!, // 나이키 에어맥스
+          productDatabase.home.find(p => p.id === 'h1')! // 다이슨 청소기
+        ];
+        analysisResult.keywords = ['인기', '베스트셀러', '범용'];
+        analysisResult.categories = ['전자기기', '신발', '가전'];
+        analysisResult.reasoning = '입력하신 상황에 가장 많은 사람들이 선택한 인기 상품을 추천합니다. 일상 생활에 유용한 아이템들입니다.';
+      }
+
+      // 가격 순 정렬 (저렴한 순)
+      selectedProducts.sort((a, b) => a.price - b.price);
+      
+      // 상위 3개만 선택
+      const top3 = selectedProducts.slice(0, 3).map((product, index) => ({
+        ...product,
+        rank: index + 1,
+        matchScore: 95 - (index * 5), // 95, 90, 85
+        analysisResult
+      }));
+
+      setRecommendedProducts(top3);
+      setIsRecommending(false);
+      notify(`✨ AI가 "${situation}" 상황에 최적인 ${top3.length}개 상품을 추천했습니다!`, 'success');
+    }, 2500);
+  };
+
+  // ✨ NEW: Purchase Agent - 구매 대행 요청
+  const requestPurchaseAgent = (product: any) => {
+    const order = {
+      id: `ORDER-${Date.now()}`,
+      product,
+      requestedAt: new Date().toISOString(),
+      status: 'processing', // processing, confirmed, shipped, delivered
+      estimatedDelivery: new Date(Date.now() + product.shippingDays * 24 * 60 * 60 * 1000).toLocaleDateString('ko-KR'),
+      trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`
+    };
+
+    setPurchaseAgentOrders([...purchaseAgentOrders, order]);
+    notify(`🛒 "${product.name}" 구매 대행 요청이 접수되었습니다!`, 'success');
+    
+    // 시뮬레이션: 5초 후 주문 확정
+    setTimeout(() => {
+      setPurchaseAgentOrders(prev => 
+        prev.map(o => o.id === order.id ? { ...o, status: 'confirmed' } : o)
+      );
+      notify(`✅ "${product.name}" 주문이 확정되었습니다. 배송 준비 중입니다.`, 'success');
+    }, 5000);
+
+    // 시뮬레이션: 10초 후 배송 시작
+    setTimeout(() => {
+      setPurchaseAgentOrders(prev => 
+        prev.map(o => o.id === order.id ? { ...o, status: 'shipped' } : o)
+      );
+      notify(`📦 "${product.name}" 배송이 시작되었습니다. 송장번호: ${order.trackingNumber}`, 'info');
+    }, 10000);
   };
 
   // ✨ NEW: Start Using Service
@@ -990,6 +1202,19 @@ export default function MyMapBotPage() {
               )}
             </button>
           )}
+          
+          {/* ✨ NEW: Situation-based Recommendation Button */}
+          <button 
+            onClick={() => setShowRecommendModal(true)}
+            className="relative ml-2 glass-card px-4 py-2 rounded-full hover:scale-105 transition-transform group"
+            title="상황 기반 AI 추천"
+          >
+            <span className="text-sm font-bold text-white flex items-center gap-2">
+              <span className="text-lg">🤖</span>
+              <span className="hidden md:inline">AI 추천</span>
+            </span>
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#7c6ef5] to-[#e6a020] opacity-0 group-hover:opacity-20 transition-opacity" />
+          </button>
 
           <div className="flex items-center gap-1.5 bg-[#5de67a]/[0.08] border border-[#5de67a]/20
                           px-3 py-1.5 rounded-full text-[0.72rem] text-[#5de67a] font-semibold ml-2">
@@ -3036,6 +3261,256 @@ export default function MyMapBotPage() {
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ✨ SITUATION-BASED AI RECOMMENDATION MODAL (NEW)                    */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {showRecommendModal && (
+        <div className="fixed inset-0 z-[75] flex items-center justify-center p-4"
+             onClick={() => setShowRecommendModal(false)}>
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+          
+          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto glass-card rounded-3xl p-8"
+               onClick={(e) => e.stopPropagation()}>
+            
+            <button 
+              onClick={() => setShowRecommendModal(false)}
+              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 
+                         flex items-center justify-center text-2xl transition-all z-10">
+              ✕
+            </button>
+
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold mb-2 gradient-text flex items-center gap-3">
+                <span className="text-4xl">🤖</span>
+                AI 상황 기반 상품 추천
+              </h2>
+              <p className="text-[#999] text-lg">
+                특정 상황을 입력하면 AI가 최적의 상품 3개를 추천하고 구매 대행까지 도와드립니다
+              </p>
+            </div>
+
+            {/* Input Section */}
+            <div className="mb-8">
+              <label className="block text-white font-bold mb-3 text-lg">
+                🎯 어떤 상황인가요?
+              </label>
+              <div className="flex gap-3">
+                <input 
+                  type="text"
+                  value={situationInput}
+                  onChange={(e) => setSituationInput(e.target.value)}
+                  placeholder="예: 내일 면접이 있어요 / 주말에 캠핑 가요 / 재택근무 환경 개선하고 싶어요"
+                  className="flex-1 input-field text-lg py-4"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && situationInput.trim() && !isRecommending) {
+                      analyzeSituationAndRecommend(situationInput.trim());
+                    }
+                  }}
+                />
+                <button 
+                  onClick={() => {
+                    if (situationInput.trim() && !isRecommending) {
+                      analyzeSituationAndRecommend(situationInput.trim());
+                    }
+                  }}
+                  disabled={isRecommending || !situationInput.trim()}
+                  className="btn-accent px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isRecommending ? (
+                    <>
+                      <span className="inline-block animate-spin mr-2">⚙️</span>
+                      분석 중...
+                    </>
+                  ) : '🔍 추천받기'}
+                </button>
+              </div>
+              
+              {/* Quick Situation Examples */}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  '내일 면접 있어요',
+                  '주말 캠핑 계획',
+                  '재택근무 환경 개선',
+                  '첫 데이트 준비',
+                  '겨울 등산 준비',
+                  '해외 여행 준비',
+                  '다이어트 시작',
+                  '출장 가요'
+                ].map((example, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => {
+                      setSituationInput(example);
+                      analyzeSituationAndRecommend(example);
+                    }}
+                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#7c6ef5]/50 
+                               rounded-full text-sm text-[#999] hover:text-white transition-all">
+                    {example}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Recommended Products */}
+            {recommendedProducts.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-2xl font-bold text-white flex items-center gap-2">
+                    ✨ AI 추천 결과
+                    <span className="text-sm font-normal text-teal-400">
+                      (상위 {recommendedProducts.length}개)
+                    </span>
+                  </h3>
+                </div>
+
+                {/* Analysis Result */}
+                {recommendedProducts[0]?.analysisResult && (
+                  <div className="glass-card p-4 rounded-xl border border-[#7c6ef5]/30 mb-6">
+                    <div className="flex items-start gap-3">
+                      <div className="text-3xl">💡</div>
+                      <div className="flex-1">
+                        <div className="text-white font-bold mb-2">AI 분석 결과</div>
+                        <p className="text-[#999] text-sm leading-relaxed mb-3">
+                          {recommendedProducts[0].analysisResult.reasoning}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <div className="text-xs text-[#999]">키워드:</div>
+                          {recommendedProducts[0].analysisResult.keywords.map((kw: string, i: number) => (
+                            <span key={i} className="px-2 py-1 bg-[#7c6ef5]/20 border border-[#7c6ef5]/30 rounded text-xs text-[#7c6ef5]">
+                              {kw}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Product Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {recommendedProducts.map((product, idx) => (
+                    <div 
+                      key={product.id}
+                      className="glass-card p-5 rounded-2xl border border-white/10 hover:border-[#7c6ef5]/50 transition-all relative overflow-hidden group"
+                      style={{ animationDelay: `${idx * 0.1}s` }}>
+                      
+                      {/* Rank Badge */}
+                      <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-gradient-to-br from-[#7c6ef5] to-[#e6a020] 
+                                    flex items-center justify-center font-bold text-white text-lg z-10">
+                        #{product.rank}
+                      </div>
+
+                      {/* Match Score */}
+                      <div className="absolute top-3 right-3 px-3 py-1 bg-teal-500/20 border border-teal-500/50 rounded-full 
+                                    text-xs font-bold text-teal-400 z-10">
+                        매칭도 {product.matchScore}%
+                      </div>
+
+                      {/* Product Image */}
+                      <div className="text-center mb-4 mt-8">
+                        <div className="text-6xl mb-3">{product.image}</div>
+                        <div className="text-xs text-[#999] mb-1">{product.category}</div>
+                        <h4 className="text-lg font-bold text-white mb-1">{product.name}</h4>
+                        <p className="text-sm text-[#999]">{product.brand}</p>
+                      </div>
+
+                      {/* Price */}
+                      <div className="text-center mb-4 pb-4 border-b border-white/10">
+                        <div className="text-2xl font-bold text-[#7c6ef5] mb-1">
+                          ₩{product.price.toLocaleString()}
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-xs text-[#999]">
+                          <span>⭐ {product.rating}</span>
+                          <span>•</span>
+                          <span>리뷰 {product.reviews.toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {product.tags.slice(0, 3).map((tag: string, i: number) => (
+                          <span key={i} className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-[#999]">
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Shipping Info */}
+                      <div className="flex items-center justify-between text-xs text-[#999] mb-4">
+                        <span>🚚 {product.shippingDays}일 내 배송</span>
+                        <span>판매: {product.seller}</span>
+                      </div>
+
+                      {/* Purchase Agent Button */}
+                      <button 
+                        onClick={() => {
+                          requestPurchaseAgent(product);
+                          notify(`"${product.name}" 구매 대행을 요청했습니다!`, 'success');
+                        }}
+                        className="btn-accent w-full py-3 text-sm font-bold hover:scale-105 transition-transform">
+                        🛒 구매 대행 요청
+                      </button>
+
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#7c6ef5]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Purchase Agent Orders Status */}
+                {purchaseAgentOrders.length > 0 && (
+                  <div className="mt-8">
+                    <h4 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                      📦 구매 대행 현황
+                      <span className="text-sm font-normal text-[#999]">
+                        ({purchaseAgentOrders.length}건)
+                      </span>
+                    </h4>
+                    <div className="space-y-3">
+                      {purchaseAgentOrders.slice(-3).reverse().map((order, idx) => (
+                        <div key={order.id} className="glass-card p-4 rounded-xl flex items-center gap-4">
+                          <div className="text-3xl">{order.product.image}</div>
+                          <div className="flex-1">
+                            <div className="text-white font-bold text-sm mb-1">{order.product.name}</div>
+                            <div className="text-xs text-[#999]">
+                              주문번호: {order.id} • 송장: {order.trackingNumber}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={`px-3 py-1 rounded-full text-xs font-bold mb-1 ${
+                              order.status === 'processing' ? 'bg-yellow-500/20 text-yellow-400' :
+                              order.status === 'confirmed' ? 'bg-blue-500/20 text-blue-400' :
+                              order.status === 'shipped' ? 'bg-purple-500/20 text-purple-400' :
+                              'bg-green-500/20 text-green-400'
+                            }`}>
+                              {order.status === 'processing' ? '⏳ 처리중' :
+                               order.status === 'confirmed' ? '✅ 주문확정' :
+                               order.status === 'shipped' ? '🚚 배송중' :
+                               '📦 배송완료'}
+                            </div>
+                            <div className="text-xs text-[#999]">도착 예정: {order.estimatedDelivery}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Empty State */}
+            {recommendedProducts.length === 0 && !isRecommending && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">🎯</div>
+                <h3 className="text-2xl font-bold text-white mb-2">상황을 입력해주세요</h3>
+                <p className="text-[#999]">
+                  AI가 귀하의 상황에 가장 적합한 상품 3개를 찾아드립니다
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
